@@ -20,7 +20,8 @@ double energy(
 arma::rowvec stpd(
     const arma::rowvec& state,
     const arma::rowvec& alpha,
-    const arma::mat& beta
+    const arma::mat& beta,
+    bool print = false
 ) {
 
   // {Declare variables}
@@ -44,6 +45,9 @@ arma::rowvec stpd(
     sign = (1 - 2 * s);
     eflip = ((-alpha - s * beta) % sign) + e;
     emin = eflip.min();
+
+    if (print)
+      std::cout << e << " -> " << emin << std::endl;
 
     // break if no improvement in energy
     if (emin >= e)
