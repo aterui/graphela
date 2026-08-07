@@ -63,3 +63,27 @@ arma::rowvec stpd(
 
   return join_rows(s, rowvec({e}));
 }
+
+// [[Rcpp::export]]
+arma::mat rss(
+    arma::rowvec alpha,
+    arma::mat beta,
+    int n = 20000
+) {
+  // {Declare}
+  // m: matrix of stable states (each row represents random initial state)
+  // s: temporary state
+  // ss: temporary stable state
+  mat m = zeros(n, beta.n_cols + 1);
+  rowvec s;
+  rowvec ss;
+
+  // {Steepest descent}
+  for (int i = 0; i < n; ++i) {
+    s = randi<rowvec>(1, beta.n_cols, distr_param(0, 1));
+    ss = stpd(s, alpha, beta);
+    m.row(i) = ss;
+  }
+
+  return m;
+}
