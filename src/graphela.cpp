@@ -79,10 +79,10 @@ arma::mat rss(
   rowvec ss;
 
   // {Steepest descent}
-  for (int i = 0; i < n; ++i) {
+  for (int k = 0; k < n; ++k) {
     s = randi<rowvec>(1, beta.n_cols, distr_param(0, 1));
     ss = stpd(s, alpha, beta);
-    m.row(i) = ss;
+    m.row(k) = ss;
   }
 
   return m;
