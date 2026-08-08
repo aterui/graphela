@@ -99,7 +99,7 @@ arma::mat ridge(
     const int n = 10000
 ) {
 
-  // {set path}
+  // ---- set path ----
   // flip: indices of species flipped (index)
   // nf: number of flips, or steps from s0 to s1
   // ns: number of species
@@ -110,26 +110,25 @@ arma::mat ridge(
   uvec path = shuffle(flip);
   uvec u = path;
 
-  // {declare}
-  // idx: index for swapping
-  // ms0: initialized matrix
-  // ms: matrix for intermediate states
-  // e: energy
-  // omega:
-  // etop:
-  // stip: state vector of a tipping point
-
+  // ---- declare ----
   // scalar
+  // etop: highest energy for the path
+  // pr: acceptance probability
   double etop = datum::inf;
   double pr;
 
   // vectors
+  // idx: index for swapping
+  // e, e0: energy vector
+  // omega: lowest ridge energy, dynamic
+  // stip: state vector of a tipping point
   uvec idx(2);
   vec e0(nf + 1);
   vec omega(n + 1);
   rowvec stip(ns + 1);
 
   // matrices
+  // ms0: initialized matrix for state vectors
   mat ms0(nf + 1, ns);
 
   // initialize
@@ -184,6 +183,7 @@ arma::mat ridge(
     temp *= (1 - r);
     std::cout << temp << std::endl;
 
+    // update
     if (randu<double>() < pr) {
       path = u;
       omega(t + 1) = etop;
