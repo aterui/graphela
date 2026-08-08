@@ -90,42 +90,70 @@ arma::mat rss(
 
 // [[Rcpp::export]]
 arma::mat ridge(
-    arma::rowvec s0,
-    arma::rowvec s1,
-    arma::rowvec alpha,
-    arma::mat beta,
-    int n = 10000
+    const arma::rowvec s0,
+    const arma::rowvec s1,
+    const arma::rowvec alpha,
+    const arma::mat beta,
+    double temp = 1,
+    const double r = 0.01,
+    const int n = 10000
 ) {
 
-  // {Declare}
+  // {set path}
   // flip: indices of species flipped (index)
   // nf: number of flips, or steps from s0 to s1
   // ns: number of species
   // path: initial path sequence from s0 to s1, shuffled
-  // omega:
-  // etop:
-  // stip: state vector of a tipping point
   uvec flip = find(abs(s0 - s1) == 1);
   const int nf = flip.n_elem;
   const int ns = alpha.n_elem;
   uvec path = shuffle(flip);
   uvec u = path;
-  double omega = datum::inf;
-  double etop = datum::inf;
-  double pr;
-  rowvec stip(ns + 1);
 
+  // {declare}
   // idx: index for swapping
   // ms0: initialized matrix
   // ms: matrix for intermediate states
   // e: energy
+  // omega:
+  // etop:
+  // stip: state vector of a tipping point
+
+  // scalar
+  double etop = datum::inf;
+  double pr;
+
+  // vectors
   uvec idx(2);
-  mat ms0(nf + 1, ns), ms(nf + 1, ns);
+  vec e0(nf + 1);
+  vec omega(n + 1);
+  rowvec stip(ns + 1);
+
+  // matrices
+  mat ms0(nf + 1, ns);
+
+  // initialize
   ms0.row(0) = s0;
-  vec e0(nf + 1), e(nf + 1);
   e0(0) = energy(s0, alpha, beta);
 
-  for (int t = 0; t < n; ++t) {
+  // ---- initial path ----
+  mat ms = ms0;
+  vec e = e0;
+
+  // state sequence from s0 to s1
+  for (int i = 0; i < nf; ++i) {
+    // flip one species, update state
+    ms.row(i + 1) = ms.row(i);
+    ms(i + 1, u(i)) = 1 - ms(i + 1, u(i));
+
+    // energy of current state
+    e(i + 1) = energy(ms.row(i + 1), alpha, beta);
+  }
+
+  omega(0) = e.max();
+
+  // ---- simulated annealing ----
+  for (int t = 1; t < n; ++t) {
     // idx: indices for swap
     u = path;
     idx = randperm(u.n_elem, 2);
@@ -150,15 +178,22 @@ arma::mat ridge(
     }
 
     etop = e.max();
-    pr = std::min(1.0, std::exp(omega - etop));
+
+    // define temperature and acceptance formula
+    pr = std::min(1.0, std::exp((omega(t) - etop) / temp));
+    temp *= (1 - r);
+    std::cout << temp << std::endl;
 
     if (randu<double>() < pr) {
       path = u;
-      omega = etop;
+      omega(t + 1) = etop;
+      stip.cols(0, ns - 1) = ms.row(e.index_max());
+      stip.col(ns) = etop;
+    } else {
+      omega(t + 1) = omega(t);
     }
-
-    std::cout << omega << std::endl;
   }
 
-  return join_rows(ms, e);
+  return omega;
 }
+
