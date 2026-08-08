@@ -102,12 +102,18 @@ arma::mat ridge(
   // nf: number of flips, or steps from s0 to s1
   // ns: number of species
   // path: initial path sequence from s0 to s1, shuffled
-  // tip: tip state
+  // omega:
+  // etop:
+  // stip: state vector of a tipping point
   uvec flip = find(abs(s0 - s1) == 1);
   const int nf = flip.n_elem;
   const int ns = alpha.n_elem;
   uvec path = shuffle(flip);
-  rowvec tip(ns + 1);
+  uvec u = path;
+  double omega = datum::inf;
+  double etop = datum::inf;
+  double pr;
+  rowvec stip(ns + 1);
 
   // idx: index for swapping
   // ms0: initialized matrix
@@ -121,10 +127,11 @@ arma::mat ridge(
 
   for (int t = 0; t < n; ++t) {
     // idx: indices for swap
-    idx = randperm(path.n_elem, 2);
+    u = path;
+    idx = randperm(u.n_elem, 2);
 
     // update path sequence by swapping indices
-    path.swap_rows(idx(0), idx(1));
+    u.swap_rows(idx(0), idx(1));
 
     // reset the initial state
     ms = ms0;
@@ -136,12 +143,21 @@ arma::mat ridge(
     for (int i = 0; i < nf; ++i) {
       // flip one species, update state
       ms.row(i + 1) = ms.row(i);
-      ms(i + 1, path(i)) = 1 - ms(i + 1, path(i));
+      ms(i + 1, u(i)) = 1 - ms(i + 1, u(i));
 
       // energy of current state
       e(i + 1) = energy(ms.row(i + 1), alpha, beta);
     }
 
+    etop = e.max();
+    pr = std::min(1.0, std::exp(omega - etop));
+
+    if (randu<double>() < pr) {
+      path = u;
+      omega = etop;
+    }
+
+    std::cout << omega << std::endl;
   }
 
   return join_rows(ms, e);
