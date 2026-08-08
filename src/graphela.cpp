@@ -108,7 +108,6 @@ arma::mat ridge(
   const int nf = flip.n_elem;
   const int ns = alpha.n_elem;
   uvec path = shuffle(flip);
-  uvec u = path;
 
   // ---- declare ----
   // scalar
@@ -136,6 +135,7 @@ arma::mat ridge(
   e0(0) = energy(s0, alpha, beta);
 
   // ---- initial path ----
+  uvec u = path;
   mat ms = ms0;
   vec e = e0;
 
