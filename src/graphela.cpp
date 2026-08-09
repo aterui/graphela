@@ -89,7 +89,7 @@ arma::mat rss(
 }
 
 // [[Rcpp::export]]
-arma::mat ridge(
+Rcpp::List ridge(
     const arma::rowvec s0,
     const arma::rowvec s1,
     const arma::rowvec alpha,
@@ -113,7 +113,7 @@ arma::mat ridge(
   // scalar
   // etop: highest energy for the path
   // pr: acceptance probability
-  double etop = datum::inf;
+  double etop;
   double pr;
 
   // vectors
@@ -149,6 +149,7 @@ arma::mat ridge(
     e(i + 1) = energy(ms.row(i + 1), alpha, beta);
   }
 
+  mat mse = join_rows(ms, e);
   omega(0) = e.max();
 
   // ---- simulated annealing ----
@@ -182,17 +183,21 @@ arma::mat ridge(
     pr = std::min(1.0, std::exp((omega(t - 1) - etop) / temp));
     temp *= (1 - r);
 
-    // update
+    // update if new value accepted
     if (randu<double>() < pr) {
       path = u;
       omega(t) = etop;
-      stip.cols(0, ns - 1) = ms.row(e.index_max());
-      stip.col(ns) = etop;
+      mse = join_rows(ms, e);
+      stip = mse.row(e.index_max());
     } else {
       omega(t) = omega(t - 1);
     }
   }
 
-  return omega;
+  return List::create(
+    Named("state") = stip,
+    Named("path") = mse,
+    Named("omega") = omega
+  );
 }
 
