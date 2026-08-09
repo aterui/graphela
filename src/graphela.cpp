@@ -91,8 +91,8 @@ arma::mat rss(
 Rcpp::List searidge(
     const arma::rowvec s0,
     const arma::rowvec s1,
-    const arma::rowvec alpha,
-    const arma::mat beta,
+    const arma::rowvec& alpha,
+    const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
     const int n = 10000
