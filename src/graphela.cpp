@@ -87,15 +87,16 @@ arma::mat rss(
   return m;
 }
 
-// [[Rcpp::export]]
-Rcpp::List search(
+arma::rowvec search(
     const arma::rowvec& s0,
     const arma::rowvec& s1,
     const arma::rowvec& alpha,
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const int n = 10000
+    const int n = 10000,
+    arma::mat* mse_out = nullptr,
+    arma::vec* omega_out = nullptr
 ) {
   // ---- set path ----
   // flip: indices of species flipped (index)
@@ -196,10 +197,39 @@ Rcpp::List search(
     }
   }
 
-  return List::create(
-    Named("state") = stip,
-    Named("path") = mse,
-    Named("omega") = omega
+  // output
+  if (mse_out != nullptr)
+    *mse_out = mse;
+
+  if (omega_out != nullptr)
+    *omega_out = omega;
+
+  return stip;
+}
+
+// [[Rcpp::export]]
+Rcpp::List searchR(
+    const arma::rowvec& s0,
+    const arma::rowvec& s1,
+    const arma::rowvec& alpha,
+    const arma::mat& beta,
+    double temp = 1,
+    const double r = 0.01,
+    const int n = 10000
+) {
+  arma::mat mse;
+  arma::vec omega;
+
+  arma::rowvec stip = search(
+    s0, s1, alpha, beta,
+    temp, r, n,
+    &mse, &omega
+  );
+
+  return Rcpp::List::create(
+    Rcpp::Named("state") = stip,
+    Rcpp::Named("path") = mse,
+    Rcpp::Named("omega") = omega
   );
 }
 
@@ -218,7 +248,7 @@ arma::mat ridge(
   mat combn(nr, 3);
   int k = 0;
   rowvec v;
-  Rcpp::List tip;
+  rowvec tip;
 
   for (int i = 0; i < nss - 1; ++i) {
     for (int j = i + 1; j < nss; ++j) {
@@ -232,8 +262,7 @@ arma::mat ridge(
                    r,
                    n);
 
-      v = Rcpp::as<arma::rowvec>(tip["state"]);
-      combn(k, 2) = v.back();
+      combn(k, 2) = tip.back();
 
       ++k;
     }
