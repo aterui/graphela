@@ -89,8 +89,8 @@ arma::mat rss(
 
 // [[Rcpp::export]]
 Rcpp::List searidge(
-    const arma::rowvec s0,
-    const arma::rowvec s1,
+    const arma::rowvec& s0,
+    const arma::rowvec& s1,
     const arma::rowvec& alpha,
     const arma::mat& beta,
     double temp = 1,
