@@ -123,7 +123,7 @@ arma::mat ridge(
   // stip: state vector of a tipping point
   uvec idx(2);
   vec e0(nf + 1);
-  vec omega(n + 1);
+  vec omega(n);
   rowvec stip(ns + 1);
 
   // matrices
@@ -179,18 +179,17 @@ arma::mat ridge(
     etop = e.max();
 
     // define temperature and acceptance formula
-    pr = std::min(1.0, std::exp((omega(t) - etop) / temp));
+    pr = std::min(1.0, std::exp((omega(t - 1) - etop) / temp));
     temp *= (1 - r);
-    std::cout << temp << std::endl;
 
     // update
     if (randu<double>() < pr) {
       path = u;
-      omega(t + 1) = etop;
+      omega(t) = etop;
       stip.cols(0, ns - 1) = ms.row(e.index_max());
       stip.col(ns) = etop;
     } else {
-      omega(t + 1) = omega(t);
+      omega(t) = omega(t - 1);
     }
   }
 
