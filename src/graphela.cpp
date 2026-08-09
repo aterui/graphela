@@ -23,8 +23,7 @@ arma::rowvec stpd(
     const arma::mat& beta,
     bool print = false
 ) {
-
-  // {Declare variables}
+  // ---- declare ----
   // eflip: vector of energy after a flip of species "i"
   // sign: sign vector for a flip of species "i"
   // emin: candidate energy minimum after flipping
@@ -34,13 +33,13 @@ arma::rowvec stpd(
   double emin;
   uword idx;
 
-  // {Initialize}
-  // s: temporary state vector - subject to updates
-  // e: temporary energy scalar - subject to updates
+  // ---- initialize ----
+  // s: temporary state vector, dynamic updates
+  // e: temporary energy scalar, dynamic updates
   rowvec s = state;
   double e = energy(state, alpha, beta);
 
-  // {Steepest descent}
+  // ---- steepest descent ----
   while(true) {
     sign = (1 - 2 * s);
     eflip = ((-alpha - s * beta) % sign) + e;
@@ -70,7 +69,7 @@ arma::mat rss(
     arma::mat beta,
     int n = 20000
 ) {
-  // {Declare}
+  // ---- declare ----
   // m: matrix of stable states (each row represents random initial state)
   // s: temporary state
   // ss: temporary stable state
@@ -78,7 +77,7 @@ arma::mat rss(
   rowvec s;
   rowvec ss;
 
-  // {Steepest descent}
+  // ---- steepest descent ----
   for (int k = 0; k < n; ++k) {
     s = randi<rowvec>(1, beta.n_cols, distr_param(0, 1));
     ss = stpd(s, alpha, beta);
@@ -98,7 +97,6 @@ Rcpp::List ridge(
     const double r = 0.01,
     const int n = 10000
 ) {
-
   // ---- set path ----
   // flip: indices of species flipped (index)
   // nf: number of flips, or steps from s0 to s1
@@ -110,13 +108,13 @@ Rcpp::List ridge(
   uvec path = shuffle(flip);
 
   // ---- declare ----
-  // scalar
+  // {scalar}
   // etop: highest energy for the path
   // pr: acceptance probability
   double etop;
   double pr;
 
-  // vectors
+  // {vectors}
   // idx: index for swapping
   // e, e0: energy vector
   // omega: lowest ridge energy, dynamic
@@ -126,7 +124,7 @@ Rcpp::List ridge(
   vec omega(n);
   rowvec stip(ns + 1);
 
-  // matrices
+  // {matrices}
   // ms0: initialized matrix for state vectors
   mat ms0(nf + 1, ns);
 
@@ -135,6 +133,10 @@ Rcpp::List ridge(
   e0(0) = energy(s0, alpha, beta);
 
   // ---- initial path ----
+  // temporary intermediate objects
+  // u: temporary path vector, dynamic updates
+  // ms: matrix for state sequence, dynamic updates
+  // e: current energy, dynamic updates
   uvec u = path;
   mat ms = ms0;
   vec e = e0;
@@ -183,7 +185,7 @@ Rcpp::List ridge(
     pr = std::min(1.0, std::exp((omega(t - 1) - etop) / temp));
     temp *= (1 - r);
 
-    // update if new value accepted
+    // update if the new value is accepted
     if (randu<double>() < pr) {
       path = u;
       omega(t) = etop;
