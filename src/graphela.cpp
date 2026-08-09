@@ -254,13 +254,11 @@ arma::mat ridge(
     for (int j = i + 1; j < nss; ++j) {
       combn(k, 0) = i + 1;
       combn(k, 1) = j + 1;
-      tip = search(ss.row(i),
-                   ss.row(j),
-                   alpha,
-                   beta,
-                   temp,
-                   r,
-                   n);
+      tip = search(
+        ss.row(i), ss.row(j),
+        alpha, beta,
+        temp, r, n
+      );
 
       combn(k, 2) = tip.back();
 
