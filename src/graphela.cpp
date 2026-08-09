@@ -202,3 +202,42 @@ Rcpp::List search(
     Named("omega") = omega
   );
 }
+
+// [[Rcpp::export]]
+arma::mat ridge(
+    const arma::mat& ss,
+    const arma::rowvec& alpha,
+    const arma::mat& beta,
+    double temp = 1,
+    const double r = 0.01,
+    const int n = 10000
+) {
+
+  const int nss = ss.n_rows;
+  const int nr = nss * (nss - 1) / 2;
+  mat combn(nr, 3);
+  int k = 0;
+  rowvec v;
+  Rcpp::List tip;
+
+  for (int i = 0; i < nss - 1; ++i) {
+    for (int j = i + 1; j < nss; ++j) {
+      combn(k, 0) = i + 1;
+      combn(k, 1) = j + 1;
+      tip = search(ss.row(i),
+                   ss.row(j),
+                   alpha,
+                   beta,
+                   temp,
+                   r,
+                   n);
+
+      v = Rcpp::as<arma::rowvec>(tip["state"]);
+      combn(k, 2) = v.back();
+
+      ++k;
+    }
+  }
+
+  return combn;
+}
