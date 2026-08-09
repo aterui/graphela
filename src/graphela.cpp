@@ -88,7 +88,7 @@ arma::mat rss(
 }
 
 // [[Rcpp::export]]
-Rcpp::List ridge(
+Rcpp::List searidge(
     const arma::rowvec s0,
     const arma::rowvec s1,
     const arma::rowvec alpha,
@@ -202,4 +202,3 @@ Rcpp::List ridge(
     Named("omega") = omega
   );
 }
-
