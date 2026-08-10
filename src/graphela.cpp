@@ -249,9 +249,11 @@ arma::mat ridge(
   // combn: output matrix
   // stip: state vector of a tipping point
   const int nss = ss.n_rows;
-  const int nr = nss * (nss - 1) / 2;
-  mat combn(nr, 3);
+  const int nr = nss * (nss - 1);
+  mat combn(nr, 6);
   rowvec stip;
+  double ss0, ss1;
+  double etip;
 
   // index
   int k = 0;
@@ -259,17 +261,32 @@ arma::mat ridge(
   for (int i = 0; i < nss - 1; ++i) {
     for (int j = i + 1; j < nss; ++j) {
 
-      combn(k, 0) = i + 1; // plus one to match R index
-      combn(k, 1) = j + 1; // plus one to match R index
-
+      // Calculate i -> j
       stip = search(
         ss.row(i), ss.row(j),
         alpha, beta,
         temp, r, n
       );
 
-      combn(k, 2) = stip.back();
+      ss0 = energy(ss.row(i), alpha, beta);
+      ss1 = energy(ss.row(j), alpha, beta);
+      etip = stip.back();
 
+      combn(k, 0) = i + 1;
+      combn(k, 1) = j + 1;
+      combn(k, 2) = ss0; // ss from
+      combn(k, 3) = ss1; // ss to
+      combn(k, 4) = etip; // tipping point
+      combn(k, 5) = etip - ss0; //energy barrier
+      ++k;
+
+      // Copy to j -> i
+      combn(k, 0) = j + 1;
+      combn(k, 1) = i + 1;
+      combn(k, 2) = ss1; // ss from
+      combn(k, 3) = ss0; // ss to
+      combn(k, 4) = etip; // tipping point
+      combn(k, 5) = etip - ss1; //energy barrier
       ++k;
     }
   }
