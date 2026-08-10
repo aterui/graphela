@@ -243,24 +243,32 @@ arma::mat ridge(
     const int n = 10000
 ) {
 
+  // ---- declare ----
+  // nss: number of stable states
+  // nr: number of combinations
+  // combn: output matrix
+  // stip: state vector of a tipping point
   const int nss = ss.n_rows;
   const int nr = nss * (nss - 1) / 2;
   mat combn(nr, 3);
+  rowvec stip;
+
+  // index
   int k = 0;
-  rowvec v;
-  rowvec tip;
 
   for (int i = 0; i < nss - 1; ++i) {
     for (int j = i + 1; j < nss; ++j) {
+
       combn(k, 0) = i + 1; // plus one to match R index
       combn(k, 1) = j + 1; // plus one to match R index
-      tip = search(
+
+      stip = search(
         ss.row(i), ss.row(j),
         alpha, beta,
         temp, r, n
       );
 
-      combn(k, 2) = tip.back();
+      combn(k, 2) = stip.back();
 
       ++k;
     }
