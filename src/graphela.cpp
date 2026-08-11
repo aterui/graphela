@@ -3,9 +3,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::plugins(cpp17)]]
 
-using namespace arma;
-using namespace Rcpp;
-
 // [[Rcpp::export]]
 double energy(
     const arma::rowvec& state,
