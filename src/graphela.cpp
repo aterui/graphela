@@ -253,27 +253,29 @@ arma::mat ridge(
 ) {
 
   // ---- declare ----
-  // nss: number of stable states
-  // nr: number of combinations
-  // combn: output matrix
-  // stip: state vector of a tipping point
+  // {scalar}
   // ess0, ess1: stable state energy
-  // mse: matrix for energy path
-  // epath: vector of energy values
+  // etip: energy at a tipping point
   // cost: cumulative energy costs
   // ed: exp(energy[i+1] - energy[i])
-
+  // nss: number of stable states
+  // nr: number of combinations
+  double ess0, ess1, etip, cost, ed;
   const arma::uword nss = ss.n_rows;
   const arma::uword nr = nss * (nss - 1) / 2;
 
-  arma::mat combn(nr, 7);
+  // {vector}
+  // stip: state vector of a tipping point
+  // epath: vector of energy values
   arma::rowvec stip;
-
-  double ess0, ess1;
-  double etip;
-  arma::mat mse;
   arma::vec epath;
-  double cost, ed;
+
+  // {matrix}
+  // combn: output matrix
+  // mse: matrix for energy path
+  arma::mat combn(nr, 7);
+  arma::mat mse;
+
 
   // index
   arma::uword k = 0;
