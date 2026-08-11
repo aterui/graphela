@@ -325,7 +325,9 @@ arma::mat ridge(
 }
 
 // [[Rcpp::export]]
-arma::uword find_shallow(const arma::mat& pem) {
+arma::uword find_shallow(
+    const arma::mat& pem
+) {
 
   // ---- key column indices ----
   // idx_depth: column index for basin depth
@@ -352,6 +354,8 @@ Rcpp::List prune(
   // ---- declare ----
   // idx_depth: column index for basin depth
   // idx_cost: column index for path energy cost
+  // idx_rm: index for basin to be removed
+  // dmax, dmin: basin depth max, min
   arma::mat map(pem.n_rows, 2);
   arma::uword idx_depth = pem.n_cols - 1;
   arma::uword idx_rm;
@@ -377,16 +381,16 @@ Rcpp::List prune(
       );
 
     // basin mapping for merge
-    map(k, 0) = pem(r, 0);
-    map(k, 1) = pem(r, 1);
+    map(k, 0) = pem(r, 0); // shallower
+    map(k, 1) = pem(r, 1); // deeper
     pem = pem.rows(keep);
 
     k++;
   }
 
+  // remove unused rows
   map.resize(k, 2);
 
-  // remove unused rows
   return Rcpp::List::create(
     Rcpp::Named("pem") = pem,
     Rcpp::Named("map") = map
