@@ -28,15 +28,15 @@ arma::rowvec stpd(
   // sign: sign vector for a flip of species "i"
   // emin: candidate energy minimum after flipping
   // idx: species index that reduces the energy most
-  rowvec eflip;
-  rowvec sign;
+  arma::rowvec eflip;
+  arma::rowvec sign;
   double emin;
-  uword idx;
+  arma::uword idx;
 
   // ---- initialize ----
   // s: temporary state vector, dynamic updates
   // e: temporary energy scalar, dynamic updates
-  rowvec s = state;
+  arma::rowvec s = state;
   double e = energy(state, alpha, beta);
 
   // ---- steepest descent ----
@@ -60,7 +60,7 @@ arma::rowvec stpd(
     e = emin;
   }
 
-  return join_rows(s, rowvec({e}));
+  return arma::join_rows(s, arma::rowvec({e}));
 }
 
 // [[Rcpp::export]]
