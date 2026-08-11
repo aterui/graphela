@@ -224,7 +224,7 @@ Rcpp::List searchR(
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const int n = 10000
+    const arma::uword n = 10000
 ) {
   arma::mat mse;
   arma::vec omega;
