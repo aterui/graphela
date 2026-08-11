@@ -249,7 +249,7 @@ arma::mat ridge(
   // combn: output matrix
   // stip: state vector of a tipping point
   const int nss = ss.n_rows;
-  const int nr = nss * (nss - 1);
+  const int nr = nss * (nss - 1) / 2;
   mat combn(nr, 6);
   rowvec stip;
   double ss0, ss1;
@@ -261,32 +261,28 @@ arma::mat ridge(
   for (int i = 0; i < nss - 1; ++i) {
     for (int j = i + 1; j < nss; ++j) {
 
-      // Calculate i -> j
+      // calculate state i ->  state j
       stip = search(
         ss.row(i), ss.row(j),
         alpha, beta,
         temp, r, n
       );
-
       ss0 = energy(ss.row(i), alpha, beta);
       ss1 = energy(ss.row(j), alpha, beta);
       etip = stip.back();
 
-      combn(k, 0) = i + 1;
-      combn(k, 1) = j + 1;
-      combn(k, 2) = ss0; // ss from
-      combn(k, 3) = ss1; // ss to
-      combn(k, 4) = etip; // tipping point
-      combn(k, 5) = etip - ss0; //energy barrier
-      ++k;
+      if (ss0 > ss1) {
+        combn(k, 0) = i + 1;  // higher-energy state
+        combn(k, 1) = j + 1;  // lower-energy state
+      } else {
+        combn(k, 0) = j + 1;  // higher-energy state
+        combn(k, 1) = i + 1;  // lower-energy state
+      }
 
-      // Copy to j -> i
-      combn(k, 0) = j + 1;
-      combn(k, 1) = i + 1;
-      combn(k, 2) = ss1; // ss from
-      combn(k, 3) = ss0; // ss to
+      combn(k, 2) = std::max(ss0, ss1); // ss higher
+      combn(k, 3) = std::min(ss0, ss1); // ss lower
       combn(k, 4) = etip; // tipping point
-      combn(k, 5) = etip - ss1; //energy barrier
+      combn(k, 5) = etip - combn(k, 2); //energy barrier
       ++k;
     }
   }
