@@ -323,3 +323,39 @@ arma::uword find_shallow(const arma::mat& pem) {
 
   return r;
 }
+
+// [[Rcpp::export]]
+arma::mat prune(
+    arma::mat& pem,
+    const double th = 0.2
+) {
+  // ---- declare ----
+  // idx_depth: column index for basin depth
+  // idx_cost: column index for path energy cost
+  arma::uword idx_depth = pem.n_cols - 1;
+  arma::uword idx_rm(1);
+  double dmax, dmin;
+
+  while (true) {
+    // find deepest & shallowest
+    arma::uword r = find_shallow(pem);
+    dmax = pem.col(idx_depth).max();
+    dmin = pem(r, idx_depth);
+
+    if (dmin >= th * dmax)
+      break;
+
+    // basin index to be removed
+    idx_rm = static_cast<arma::uword>(pem(r, 0));
+
+    // retain pairs not involving shallow basin
+    arma::uvec keep =
+      arma::find(
+        (pem.col(0) != idx_rm) && (pem.col(1) != idx_rm)
+      );
+
+    pem = pem.rows(keep);
+  }
+
+  return pem;
+}
