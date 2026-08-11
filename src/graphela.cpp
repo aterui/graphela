@@ -390,11 +390,16 @@ Rcpp::List prune(
     k++;
   }
 
-  // remove unused rows
-  map.resize(k, 2);
+  if (k == 0) {
+    return Rcpp::List::create(
+      Rcpp::Named("pem") = pem,
+      Rcpp::Named("map") = R_NilValue
+    );
+  }
 
   return Rcpp::List::create(
     Rcpp::Named("pem") = pem,
-    Rcpp::Named("map") = map
+    Rcpp::Named("map") = map.resize(k, 2)
   );
 }
+
