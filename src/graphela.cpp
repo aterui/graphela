@@ -298,8 +298,8 @@ arma::mat ridge(
       combn(k, 2) = std::max(ess0, ess1); // ss energy higher
       combn(k, 3) = std::min(ess0, ess1); // ss energy lower
       combn(k, 4) = etip; // tipping point
-      combn(k, 5) = etip - combn(k, 2); // energy barrier
-      combn(k, 6) = cost; // cumulative energy cost
+      combn(k, 5) = cost; // cumulative energy cost
+      combn(k, 6) = etip - combn(k, 2); // energy barrier
       ++k;
     }
   }
