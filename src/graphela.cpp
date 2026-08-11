@@ -91,7 +91,7 @@ arma::rowvec search(
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const int n = 10000,
+    const arma::uword n = 10000,
     arma::mat* mse_out = nullptr,
     arma::vec* omega_out = nullptr
 ) {
@@ -102,8 +102,8 @@ arma::rowvec search(
   // path: initial path sequence from s0 to s1, shuffled
   arma::uvec flip = arma::find(abs(s0 - s1) == 1);
   arma::uvec path = arma::shuffle(flip);
-  const int nf = flip.n_elem;
-  const int ns = alpha.n_elem;
+  const arma::uword nf = flip.n_elem;
+  const arma::uword ns = alpha.n_elem;
 
   // ---- declare ----
   // {scalar}
@@ -140,7 +140,8 @@ arma::rowvec search(
   arma::vec e = e0;
 
   // state sequence from s0 to s1
-  for (int i = 0; i < nf; ++i) {
+  for (arma::uword i = 0; i < nf; ++i) {
+
     // flip one species, update state
     ms.row(i + 1) = ms.row(i);
     ms(i + 1, u(i)) = 1 - ms(i + 1, u(i));
@@ -153,7 +154,8 @@ arma::rowvec search(
   omega(0) = e.max();
 
   // ---- simulated annealing ----
-  for (int t = 1; t < n; ++t) {
+  for (arma::uword t = 1; t < n; ++t) {
+
     // idx: indices for swap
     u = path;
     idx = arma::randperm(u.n_elem, 2);
@@ -168,7 +170,8 @@ arma::rowvec search(
     e = e0;
 
     // state sequence from s0 to s1
-    for (int i = 0; i < nf; ++i) {
+    for (arma::uword i = 0; i < nf; ++i) {
+
       // flip one species, update state
       ms.row(i + 1) = ms.row(i);
       ms(i + 1, u(i)) = 1 - ms(i + 1, u(i));
@@ -180,7 +183,11 @@ arma::rowvec search(
     etop = e.max();
 
     // define temperature and acceptance formula
-    pr = std::min(1.0, std::exp((omega(t - 1) - etop) / temp));
+    pr = std::min(
+      1.0,
+      std::exp((omega(t - 1) - etop) / temp)
+    );
+
     temp *= (1 - r);
 
     // update if the new value is accepted
