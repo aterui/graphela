@@ -305,20 +305,20 @@ arma::mat ridge(
 }
 
 // [[Rcpp::export]]
-arma::uword find_shallow(const arma::mat& em) {
+arma::uword find_shallow(const arma::mat& pem) {
 
   // ---- key column indices ----
   // idx_depth: column index for basin depth
   // idx_cost: column index for path energy cost
-  arma::uword idx_depth = em.n_cols - 1;
-  arma::uword idx_cost = em.n_cols - 2;
+  arma::uword idx_depth = pem.n_cols - 1;
+  arma::uword idx_cost = pem.n_cols - 2;
 
   // indices for candidate rows
   arma::uvec idx_sh =
-    arma::find(em.col(idx_depth) == em.col(idx_depth).min());
+    arma::find(pem.col(idx_depth) == pem.col(idx_depth).min());
 
   // select the minimum path cost amongst the candidates
-  arma::mat candid = em.rows(idx_sh);
+  arma::mat candid = pem.rows(idx_sh);
   arma::uword r = idx_sh(candid.col(idx_cost).index_min());
 
   return r;
