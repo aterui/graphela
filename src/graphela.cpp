@@ -67,19 +67,19 @@ arma::rowvec stpd(
 arma::mat rss(
     arma::rowvec alpha,
     arma::mat beta,
-    int n = 20000
+    const int n = 20000
 ) {
   // ---- declare ----
   // m: matrix of stable states (each row represents random initial state)
   // s: temporary state
   // ss: temporary stable state
-  mat m = zeros(n, beta.n_cols + 1);
-  rowvec s;
-  rowvec ss;
+  arma::mat m = arma::zeros(n, beta.n_cols + 1);
+  arma::rowvec s;
+  arma::rowvec ss;
 
   // ---- steepest descent ----
   for (int k = 0; k < n; ++k) {
-    s = randi<rowvec>(1, beta.n_cols, distr_param(0, 1));
+    s = arma::randi<arma::rowvec>(1, beta.n_cols, arma::distr_param(0, 1));
     ss = stpd(s, alpha, beta);
     m.row(k) = ss;
   }
