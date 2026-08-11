@@ -248,12 +248,20 @@ arma::mat ridge(
   // nr: number of combinations
   // combn: output matrix
   // stip: state vector of a tipping point
+  // ess0, ess1: stable state energy
+  // mse: matrix for energy path
+  // epath: vector of energy values
+  // cost: cumulative energy costs
+  // ed: exp(energy[i+1] - energy[i])
   const int nss = ss.n_rows;
-  const int nr = nss * (nss - 1);
-  mat combn(nr, 6);
+  const int nr = nss * (nss - 1) / 2;
+  mat combn(nr, 7);
   rowvec stip;
-  double ss0, ss1;
+  double ess0, ess1;
   double etip;
+  arma::mat mse;
+  arma::vec epath;
+  double cost, ed;
 
   // index
   int k = 0;
@@ -261,32 +269,37 @@ arma::mat ridge(
   for (int i = 0; i < nss - 1; ++i) {
     for (int j = i + 1; j < nss; ++j) {
 
-      // Calculate i -> j
+      // calculate state i ->  state j
       stip = search(
         ss.row(i), ss.row(j),
         alpha, beta,
-        temp, r, n
+        temp, r, n,
+        &mse
       );
-
-      ss0 = energy(ss.row(i), alpha, beta);
-      ss1 = energy(ss.row(j), alpha, beta);
+      ess0 = energy(ss.row(i), alpha, beta);
+      ess1 = energy(ss.row(j), alpha, beta);
       etip = stip.back();
+      epath = mse.col(mse.n_cols - 1);
 
-      combn(k, 0) = i + 1;
-      combn(k, 1) = j + 1;
-      combn(k, 2) = ss0; // ss from
-      combn(k, 3) = ss1; // ss to
-      combn(k, 4) = etip; // tipping point
-      combn(k, 5) = etip - ss0; //energy barrier
-      ++k;
+      cost = 0;
+      for (arma::uword m = 0; m < epath.n_elem - 1; ++m) {
+        ed = epath(m + 1) - epath(m);
+        cost += std::exp(ed) - 1.0;
+      }
 
-      // Copy to j -> i
-      combn(k, 0) = j + 1;
-      combn(k, 1) = i + 1;
-      combn(k, 2) = ss1; // ss from
-      combn(k, 3) = ss0; // ss to
+      if (ess0 > ess1) {
+        combn(k, 0) = i + 1;  // higher-energy state
+        combn(k, 1) = j + 1;  // lower-energy state
+      } else {
+        combn(k, 0) = j + 1;  // higher-energy state
+        combn(k, 1) = i + 1;  // lower-energy state
+      }
+
+      combn(k, 2) = std::max(ess0, ess1); // ss energy higher
+      combn(k, 3) = std::min(ess0, ess1); // ss energy lower
       combn(k, 4) = etip; // tipping point
-      combn(k, 5) = etip - ss1; //energy barrier
+      combn(k, 5) = etip - combn(k, 2); // energy barrier
+      combn(k, 6) = cost; // cumulative energy cost
       ++k;
     }
   }
