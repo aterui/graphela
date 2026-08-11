@@ -255,8 +255,8 @@ arma::mat ridge(
   // ed: exp(energy[i+1] - energy[i])
   const int nss = ss.n_rows;
   const int nr = nss * (nss - 1) / 2;
-  mat combn(nr, 7);
-  rowvec stip;
+  arma::mat combn(nr, 7);
+  arma::rowvec stip;
   double ess0, ess1;
   double etip;
   arma::mat mse;
