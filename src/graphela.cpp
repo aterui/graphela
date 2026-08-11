@@ -103,10 +103,10 @@ arma::rowvec search(
   // nf: number of flips, or steps from s0 to s1
   // ns: number of species
   // path: initial path sequence from s0 to s1, shuffled
-  uvec flip = find(abs(s0 - s1) == 1);
+  arma::uvec flip = arma::find(abs(s0 - s1) == 1);
+  arma::uvec path = arma::shuffle(flip);
   const int nf = flip.n_elem;
   const int ns = alpha.n_elem;
-  uvec path = shuffle(flip);
 
   // ---- declare ----
   // {scalar}
@@ -120,14 +120,14 @@ arma::rowvec search(
   // e, e0: energy vector
   // omega: lowest ridge energy, dynamic
   // stip: state vector of a tipping point
-  uvec idx(2);
-  vec e0(nf + 1);
-  vec omega(n);
-  rowvec stip(ns + 1);
+  arma::uvec idx(2);
+  arma::vec e0(nf + 1);
+  arma::vec omega(n);
+  arma::rowvec stip(ns + 1);
 
   // {matrices}
   // ms0: initialized matrix for state vectors
-  mat ms0(nf + 1, ns);
+  arma::mat ms0(nf + 1, ns);
 
   // initialize
   ms0.row(0) = s0;
@@ -138,9 +138,9 @@ arma::rowvec search(
   // u: temporary path vector, dynamic updates
   // ms: matrix for state sequence, dynamic updates
   // e: current energy, dynamic updates
-  uvec u = path;
-  mat ms = ms0;
-  vec e = e0;
+  arma::uvec u = path;
+  arma::mat ms = ms0;
+  arma::vec e = e0;
 
   // state sequence from s0 to s1
   for (int i = 0; i < nf; ++i) {
@@ -152,14 +152,14 @@ arma::rowvec search(
     e(i + 1) = energy(ms.row(i + 1), alpha, beta);
   }
 
-  mat mse = join_rows(ms, e);
+  arma::mat mse = arma::join_rows(ms, e);
   omega(0) = e.max();
 
   // ---- simulated annealing ----
   for (int t = 1; t < n; ++t) {
     // idx: indices for swap
     u = path;
-    idx = randperm(u.n_elem, 2);
+    idx = arma::randperm(u.n_elem, 2);
 
     // update path sequence by swapping indices
     u.swap_rows(idx(0), idx(1));
@@ -187,10 +187,10 @@ arma::rowvec search(
     temp *= (1 - r);
 
     // update if the new value is accepted
-    if (randu<double>() < pr) {
+    if (arma::randu<double>() < pr) {
       path = u;
       omega(t) = etop;
-      mse = join_rows(ms, e);
+      mse = arma::join_rows(ms, e);
       stip = mse.row(e.index_max());
     } else {
       omega(t) = omega(t - 1);
