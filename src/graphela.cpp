@@ -273,14 +273,14 @@ arma::mat ridge(
 ) {
   // ---- declare ----
   // {scalar}
-  // ess0, ess1: stable state energy
+  // ess0, ess1: energy of the two stable states
   // etip: energy at a tipping point
-  // cost: cumulative energy costs
-  // ed: exp(energy[i+1] - energy[i])
+  // cost: cumulative energy cost along the path
+  // ed: energy difference between consecutive states
   // ns: number of species
   // nss: number of stable states
-  // nr: number of combinations
-  // k: index
+  // nr: number of state pairs
+  // k: index of the state pair
   double ess0, ess1, etip, cost, ed;
   const arma::uword ns = alpha.n_elem;
   const arma::uword nss = sse.n_rows;
@@ -291,17 +291,17 @@ arma::mat ridge(
     Rcpp::stop("sse must contain ns species columns plus one energy column.");
 
   // {vector}
-  // stip: state vector of a tipping point
-  // e: vector of stable state energy values
-  // epath: vector of path energy values
+  // stip: state vector and energy at a tipping point
+  // e: energy of each stable state
+  // epath: energy along the selected path
   arma::rowvec stip;
   arma::vec e = sse.col(sse.n_cols - 1);
   arma::vec epath;
 
   // {matrix}
   // ss: matrix of stable states
-  // combn: output matrix
-  // mse: matrix for energy path
+  // combn: output matrix for all state pairs
+  // mse: state sequence and energy along the selected path
   arma::mat ss = sse.cols(0, ns - 1);
   arma::mat combn(nr, 7);
   arma::mat mse;
@@ -309,7 +309,7 @@ arma::mat ridge(
   for (arma::uword i = 0; i < nss - 1; ++i) {
     for (arma::uword j = i + 1; j < nss; ++j) {
 
-      // calculate state i -> state j
+      // calculate path from state i to state j
       stip = findpath_cpp(
         ss.row(i), ss.row(j),
         alpha, beta,
@@ -338,11 +338,11 @@ arma::mat ridge(
         combn(k, 1) = i + 1;  // lower-energy state
       }
 
-      combn(k, 2) = std::max(ess0, ess1); // ss energy higher
-      combn(k, 3) = std::min(ess0, ess1); // ss energy lower
-      combn(k, 4) = etip; // tipping point
+      combn(k, 2) = std::max(ess0, ess1); // higher stable-state energy
+      combn(k, 3) = std::min(ess0, ess1); // lower stable-state energy
+      combn(k, 4) = etip; // tipping-point energy
       combn(k, 5) = cost; // cumulative energy cost
-      combn(k, 6) = etip - combn(k, 2);  // energy barrier
+      combn(k, 6) = etip - combn(k, 2); // energy barrier
 
       ++k;
     }
