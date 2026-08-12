@@ -89,7 +89,7 @@ arma::mat rss(
   return m;
 }
 
-arma::rowvec search(
+arma::rowvec findpath_cpp(
     const arma::rowvec& s0,
     const arma::rowvec& s1,
     const arma::rowvec& alpha,
@@ -117,7 +117,7 @@ arma::rowvec search(
   double etop;
   double pr;
 
-  // {vectors}
+  // {vector}
   // idx: index for swapping
   // e, e0: energy vector
   // omega: lowest ridge energy, dynamic
@@ -127,7 +127,7 @@ arma::rowvec search(
   arma::vec omega(n);
   arma::rowvec stip(ns + 1);
 
-  // {matrices}
+  // {matrix}
   // ms0: initialized matrix for state vectors
   arma::mat ms0(nf + 1, ns);
 
@@ -217,7 +217,7 @@ arma::rowvec search(
 }
 
 // [[Rcpp::export]]
-Rcpp::List searchR(
+Rcpp::List findpath(
     const arma::rowvec& s0,
     const arma::rowvec& s1,
     const arma::rowvec& alpha,
@@ -229,7 +229,7 @@ Rcpp::List searchR(
   arma::mat mse;
   arma::vec omega;
 
-  arma::rowvec stip = search(
+  arma::rowvec stip = findpath_cpp(
     s0, s1, alpha, beta,
     temp, r, n,
     &mse, &omega
@@ -260,9 +260,11 @@ arma::mat ridge(
   // ed: exp(energy[i+1] - energy[i])
   // nss: number of stable states
   // nr: number of combinations
+  // k: index
   double ess0, ess1, etip, cost, ed;
   const arma::uword nss = ss.n_rows;
   const arma::uword nr = nss * (nss - 1) / 2;
+  arma::uword k = 0;
 
   // {vector}
   // stip: state vector of a tipping point
@@ -276,16 +278,12 @@ arma::mat ridge(
   arma::mat combn(nr, 7);
   arma::mat mse;
 
-
-  // index
-  arma::uword k = 0;
-
   for (arma::uword i = 0; i < nss - 1; ++i) {
 
     for (arma::uword j = i + 1; j < nss; ++j) {
 
       // calculate state i -> state j
-      stip = search(
+      stip = findpath_cpp(
         ss.row(i), ss.row(j),
         alpha, beta,
         temp, r, n,
