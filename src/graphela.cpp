@@ -43,7 +43,7 @@ arma::rowvec stpd(
     emin = eflip.min();
 
     if (print)
-      std::cout << e << " -> " << emin << std::endl;
+      Rcpp::Rcout << e << " -> " << emin << "\n";
 
     // break if no improvement in energy
     if (emin >= e)
