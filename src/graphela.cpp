@@ -414,6 +414,9 @@ Rcpp::List prune(
     k++;
   }
 
+  // remove excess rows
+  map.resize(k, 2);
+
   if (k == 0) {
     return Rcpp::List::create(
       Rcpp::Named("pem") = pem,
@@ -423,6 +426,6 @@ Rcpp::List prune(
 
   return Rcpp::List::create(
     Rcpp::Named("pem") = pem,
-    Rcpp::Named("map") = map.resize(k, 2)
+    Rcpp::Named("map") = map
   );
 }
