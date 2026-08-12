@@ -196,7 +196,10 @@ arma::rowvec findpath_cpp(
       std::exp((omega(t - 1) - etop) / temp)
     );
 
+    // update temperature
     temp *= (1 - r);
+    if (temp < 1e-12)
+      temp = 1e-12;
 
     // update if the new value is accepted
     if (arma::randu<double>() < pr) {
