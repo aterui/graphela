@@ -9,8 +9,7 @@ double energy(
     const arma::rowvec& alpha,
     const arma::mat& beta
 ) {
-  arma::mat e = - state * alpha.t() - (state * (state * beta).t() ) / 2;
-  return arma::as_scalar(e);
+  return -(arma::dot(state, alpha) + arma::dot(state, state * beta) * 0.5);
 }
 
 // [[Rcpp::export]]
