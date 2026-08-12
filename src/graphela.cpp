@@ -63,23 +63,59 @@ arma::rowvec stpd(
 arma::mat rss(
     arma::rowvec alpha,
     arma::mat beta,
-    const arma::uword n = 20000
+    const arma::uword n = 10000,
+    const bool replace = true
 ) {
   // ---- declare ----
-  // m: matrix of stable states (each row represents random initial state)
-  // s: temporary state
-  // ss: temporary stable state
-  arma::mat m = arma::zeros(n, beta.n_cols + 1);
-  arma::rowvec s;
-  arma::rowvec ss;
+  // m: matrix of stable states
+  // s: temporary initial state
+  // ss: stable state reached from the initial state
+  // ns: number of species
+  // nstate: number of possible binary states when ns < 32
+  // nr: number of initial states to evaluate
+
+  const arma::uword ns = alpha.n_elem;
+  const arma::uword nstate = (ns < 32) ? (1ULL << ns) : 0;
+  const arma::uword nr = (ns < 32) ? std::min(nstate, n) : n;
+
+  arma::mat m(nr, ns + 1);
+  arma::rowvec s(ns);
+  arma::rowvec ss(ns + 1);
+
+  // initial states represented as integers when ns < 32
+  arma::uvec init;
+
+  if (ns < 32 && !replace) {
+
+    if (nstate <= n) {
+      // enumerate all possible binary states
+      init = arma::regspace<arma::uvec>(0, nstate - 1);
+    } else {
+      // randomly sample n unique binary states
+      init = arma::randperm(nstate, n);
+    }
+
+  }
 
   // ---- steepest descent ----
-  for (arma::uword k = 0; k < n; ++k) {
+  for (arma::uword k = 0; k < nr; ++k) {
 
-    s = arma::randi<arma::rowvec>(
-      1, beta.n_cols,
-      arma::distr_param(0, 1)
-    );
+    if (ns < 32 && !replace) {
+
+      // convert integer state to binary state vector
+      const arma::uword z = init(k);
+
+      for (arma::uword i = 0; i < ns; ++i)
+        s(i) = (z >> i) & 1ULL;
+
+    } else {
+
+      // randomly sample an initial binary state
+      s = arma::randi<arma::rowvec>(
+        1, ns,
+        arma::distr_param(0, 1)
+      );
+    }
 
     ss = stpd(s, alpha, beta);
     m.row(k) = ss;
