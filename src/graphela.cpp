@@ -111,15 +111,17 @@ arma::rowvec findpath_cpp(
 
   // ---- declare ----
   // {scalar}
+  // de: energy increment by single flipping
   // etop: highest energy for the path
   // pr: acceptance probability
-  double etop;
-  double pr;
+  // k: index for flipping
+  double de, etop, pr;
+  arma::uword k;
 
   // {vector}
   // idx: index for swapping
-  // e, e0: energy vector
-  // omega: lowest ridge energy, dynamic
+  // e0: energy vector
+  // omega: lowest ridge energy, dynamic updates
   // stip: state vector of a tipping point
   arma::uvec idx(2);
   arma::vec e0(nf + 1);
@@ -136,25 +138,31 @@ arma::rowvec findpath_cpp(
 
   // ---- initial path ----
   // temporary intermediate objects
+  // s: state vector, dynamic updates
   // u: temporary path vector, dynamic updates
   // ms: matrix for state sequence, dynamic updates
   // e: current energy, dynamic updates
+  arma::rowvec s = s0;
   arma::uvec u = path;
   arma::mat ms = ms0;
   arma::vec e = e0;
 
   // state sequence from s0 to s1
   for (arma::uword i = 0; i < nf; ++i) {
+    k = u(i);
 
     // flip one species, update state
     ms.row(i + 1) = ms.row(i);
-    ms(i + 1, u(i)) = 1 - ms(i + 1, u(i));
+    ms(i + 1, k) = 1 - ms(i + 1, k);
 
-    // energy of current state
-    e(i + 1) = energy(ms.row(i + 1), alpha, beta);
+    // update energy
+    de = -(1 - 2 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
+    e(i + 1) = de + e(i);
+    s(k) = 1 - s(k);
   }
 
   arma::mat mse = arma::join_rows(ms, e);
+  stip = mse.row(e.index_max());
   omega(0) = e.max();
 
   // ---- simulated annealing ----
@@ -167,23 +175,19 @@ arma::rowvec findpath_cpp(
     // update path sequence by swapping indices
     u.swap_rows(idx(0), idx(1));
 
-    // reset the initial state
-    ms = ms0;
-
-    // reset energy
+    // reset state and energy
+    s = s0;
     e = e0;
 
     // state sequence from s0 to s1
     for (arma::uword i = 0; i < nf; ++i) {
-
-      // flip one species, update state
-      ms.row(i + 1) = ms.row(i);
-      ms(i + 1, u(i)) = 1 - ms(i + 1, u(i));
-
-      // energy of current state
-      e(i + 1) = energy(ms.row(i + 1), alpha, beta);
+      k = u(i);
+      de = -(1 - 2 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
+      e(i + 1) = de + e(i);
+      s(k) = 1 - s(k);
     }
 
+    // record barrier energy for the current path
     etop = e.max();
 
     // define temperature and acceptance formula
@@ -196,8 +200,21 @@ arma::rowvec findpath_cpp(
 
     // update if the new value is accepted
     if (arma::randu<double>() < pr) {
+      // update path and barrier
       path = u;
       omega(t) = etop;
+
+      // reset matrix
+      ms = ms0;
+
+      // re-construct matrix
+      for (arma::uword i = 0; i < nf; ++i) {
+        // flip one species, update state
+        k = path(i);
+        ms.row(i + 1) = ms.row(i);
+        ms(i + 1, k) = 1 - ms(i + 1, k);
+      }
+
       mse = arma::join_rows(ms, e);
       stip = mse.row(e.index_max());
     } else {
@@ -250,7 +267,6 @@ arma::mat ridge(
     const double r = 0.01,
     const arma::uword n = 10000
 ) {
-
   // ---- declare ----
   // {scalar}
   // ess0, ess1: stable state energy
