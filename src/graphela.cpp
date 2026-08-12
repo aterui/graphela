@@ -21,20 +21,20 @@ arma::rowvec stpd(
     bool print = false
 ) {
   // ---- declare ----
-  // eflip: vector of energy after a flip of species "i"
-  // sign: sign vector for a flip of species "i"
+  // {scalar}
+  // e: temporary energy scalar, dynamic updates
   // emin: candidate energy minimum after flipping
   // idx: species index that reduces the energy most
-  arma::rowvec eflip;
-  arma::rowvec sign;
+  double e = energy(state, alpha, beta);
   double emin;
   arma::uword idx;
 
-  // ---- initialize ----
+  // {vector}
+  // eflip: vector of energy after a flip of species "i"
+  // sign: sign vector for a flip of species "i"
   // s: temporary state vector, dynamic updates
-  // e: temporary energy scalar, dynamic updates
+  arma::rowvec eflip, sign;
   arma::rowvec s = state;
-  double e = energy(state, alpha, beta);
 
   // ---- steepest descent ----
   while(true) {
