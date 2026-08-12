@@ -261,7 +261,7 @@ Rcpp::List findpath(
 
 // [[Rcpp::export]]
 arma::mat ridge(
-    const arma::mat& ss,
+    const arma::mat& sse,
     const arma::rowvec& alpha,
     const arma::mat& beta,
     double temp = 1,
@@ -274,28 +274,36 @@ arma::mat ridge(
   // etip: energy at a tipping point
   // cost: cumulative energy costs
   // ed: exp(energy[i+1] - energy[i])
+  // ns: number of species
   // nss: number of stable states
   // nr: number of combinations
   // k: index
   double ess0, ess1, etip, cost, ed;
-  const arma::uword nss = ss.n_rows;
+  const arma::uword ns = alpha.n_elem;
+  const arma::uword nss = sse.n_rows;
   const arma::uword nr = nss * (nss - 1) / 2;
   arma::uword k = 0;
 
+  if (sse.n_cols != ns + 1)
+    Rcpp::stop("sse must contain ns species columns plus one energy column.");
+
   // {vector}
   // stip: state vector of a tipping point
-  // epath: vector of energy values
+  // e: vector of stable state energy values
+  // epath: vector of path energy values
   arma::rowvec stip;
+  arma::vec e = sse.col(sse.n_cols - 1);
   arma::vec epath;
 
   // {matrix}
+  // ss: matrix of stable states
   // combn: output matrix
   // mse: matrix for energy path
+  arma::mat ss = sse.cols(0, ns - 1);
   arma::mat combn(nr, 7);
   arma::mat mse;
 
   for (arma::uword i = 0; i < nss - 1; ++i) {
-
     for (arma::uword j = i + 1; j < nss; ++j) {
 
       // calculate state i -> state j
@@ -306,8 +314,8 @@ arma::mat ridge(
         &mse
       );
 
-      ess0 = energy(ss.row(i), alpha, beta);
-      ess1 = energy(ss.row(j), alpha, beta);
+      ess0 = e(i);
+      ess1 = e(j);
 
       etip = stip.back();
       epath = mse.col(mse.n_cols - 1);
