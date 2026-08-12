@@ -100,10 +100,10 @@ arma::rowvec findpath_cpp(
     arma::vec* omega_out = nullptr
 ) {
   // ---- set path ----
-  // flip: indices of species flipped (index)
+  // flip: indices of species that differ between s0 and s1
   // nf: number of flips, or steps from s0 to s1
   // ns: number of species
-  // path: initial path sequence from s0 to s1, shuffled
+  // path: shuffled sequence of species to flip
   arma::uvec flip = arma::find(abs(s0 - s1) == 1);
   arma::uvec path = arma::shuffle(flip);
   const arma::uword nf = flip.n_elem;
@@ -111,25 +111,25 @@ arma::rowvec findpath_cpp(
 
   // ---- declare ----
   // {scalar}
-  // de: energy increment by single flipping
-  // etop: highest energy for the path
+  // de: energy increment from a single flip
+  // etop: maximum energy along the candidate path
   // pr: acceptance probability
-  // k: index for flipping
+  // k: index of the species to flip
   double de, etop, pr;
   arma::uword k;
 
   // {vector}
-  // idx: index for swapping
-  // e0: energy vector
-  // omega: lowest ridge energy, dynamic updates
-  // stip: state vector of a tipping point
+  // idx: indices of the two positions to swap
+  // e0: energy vector initialized at s0
+  // omega: barrier energy of the current accepted path
+  // stip: state vector and energy at the highest-energy point
   arma::uvec idx(2);
   arma::vec e0(nf + 1);
   arma::vec omega(n);
   arma::rowvec stip(ns + 1);
 
   // {matrix}
-  // ms0: initialized matrix for state vectors
+  // ms0: state sequence initialized at s0
   arma::mat ms0(nf + 1, ns);
 
   // initialize
@@ -137,11 +137,10 @@ arma::rowvec findpath_cpp(
   e0(0) = energy(s0, alpha, beta);
 
   // ---- initial path ----
-  // temporary intermediate objects
-  // s: state vector, dynamic updates
-  // u: temporary path vector, dynamic updates
-  // ms: matrix for state sequence, dynamic updates
-  // e: current energy, dynamic updates
+  // s: current state
+  // u: temporary path sequence
+  // ms: state sequence for the current path
+  // e: energy sequence for the current path
   arma::rowvec s = s0;
   arma::uvec u = path;
   arma::mat ms = ms0;
@@ -151,7 +150,7 @@ arma::rowvec findpath_cpp(
   for (arma::uword i = 0; i < nf; ++i) {
     k = u(i);
 
-    // flip one species, update state
+    // flip one species and update the state
     ms.row(i + 1) = ms.row(i);
     ms(i + 1, k) = 1 - ms(i + 1, k);
 
@@ -182,15 +181,17 @@ arma::rowvec findpath_cpp(
     // state sequence from s0 to s1
     for (arma::uword i = 0; i < nf; ++i) {
       k = u(i);
+
+      // update energy
       de = -(1 - 2 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
       e(i + 1) = de + e(i);
       s(k) = 1 - s(k);
     }
 
-    // record barrier energy for the current path
+    // record the maximum energy along the candidate path
     etop = e.max();
 
-    // define temperature and acceptance formula
+    // calculate acceptance probability
     pr = std::min(
       1.0,
       std::exp((omega(t - 1) - etop) / temp)
@@ -199,7 +200,7 @@ arma::rowvec findpath_cpp(
     // update temperature
     temp *= (1 - r);
 
-    // update if the new value is accepted
+    // accept the candidate path if accepted
     if (arma::randu<double>() < pr) {
       // update path and barrier
       path = u;
@@ -208,16 +209,18 @@ arma::rowvec findpath_cpp(
       // reset matrix
       ms = ms0;
 
-      // re-construct matrix
+      // reconstruct state sequence
       for (arma::uword i = 0; i < nf; ++i) {
-        // flip one species, update state
         k = path(i);
+
+        // flip one species and update the state
         ms.row(i + 1) = ms.row(i);
         ms(i + 1, k) = 1 - ms(i + 1, k);
       }
 
       mse = arma::join_rows(ms, e);
       stip = mse.row(e.index_max());
+
     } else {
       omega(t) = omega(t - 1);
     }
