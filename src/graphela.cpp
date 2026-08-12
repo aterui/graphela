@@ -379,9 +379,8 @@ Rcpp::List prune(
 ) {
   // ---- declare ----
   // idx_depth: column index for basin depth
-  // idx_cost: column index for path energy cost
-  // idx_rm: index for basin to be removed
-  // dmax, dmin: basin depth max, min
+  // idx_rm: identifier of the basin to be removed
+  // dmax, dmin: maximum and minimum basin depth
   arma::mat map(pem.n_rows, 2);
   arma::uword idx_depth = pem.n_cols - 1;
   arma::uword idx_rm;
@@ -389,26 +388,27 @@ Rcpp::List prune(
   double dmax, dmin;
 
   while (true) {
-    // find deepest & shallowest
+    // find deepest and shallowest basin
     arma::uword r = find_shallow(pem);
     dmax = pem.col(idx_depth).max();
     dmin = pem(r, idx_depth);
 
+    // stop if the shallowest basin is sufficiently deep
     if (dmin >= th * dmax)
       break;
 
-    // basin to be removed
+    // identify basin to be removed
     idx_rm = static_cast<arma::uword>(pem(r, 0));
 
-    // retain pairs not involving shallow basin
+    // retain pairs not involving the shallow basin
     arma::uvec keep =
       arma::find(
         (pem.col(0) != idx_rm) && (pem.col(1) != idx_rm)
       );
 
-    // basin mapping for merge
-    map(k, 0) = pem(r, 0); // shallower
-    map(k, 1) = pem(r, 1); // deeper
+    // record basin mapping for merge
+    map(k, 0) = pem(r, 0); // shallower basin
+    map(k, 1) = pem(r, 1); // deeper basin
     pem = pem.rows(keep);
 
     k++;
@@ -426,4 +426,3 @@ Rcpp::List prune(
     Rcpp::Named("map") = map.resize(k, 2)
   );
 }
-
