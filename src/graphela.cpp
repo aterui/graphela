@@ -331,11 +331,11 @@ arma::mat ridge(
       }
 
       if (ess0 > ess1) {
-        combn(k, 0) = i + 1;  // higher-energy state
-        combn(k, 1) = j + 1;  // lower-energy state
+        combn(k, 0) = i + 1; // higher-energy state
+        combn(k, 1) = j + 1; // lower-energy state
       } else {
-        combn(k, 0) = j + 1;  // higher-energy state
-        combn(k, 1) = i + 1;  // lower-energy state
+        combn(k, 0) = j + 1; // higher-energy state
+        combn(k, 1) = i + 1; // lower-energy state
       }
 
       combn(k, 2) = std::max(ess0, ess1); // higher stable-state energy
