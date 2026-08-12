@@ -155,7 +155,7 @@ arma::rowvec findpath_cpp(
     ms(i + 1, k) = 1 - ms(i + 1, k);
 
     // update energy
-    de = -(1 - 2 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
+    de = -(1.0 - 2.0 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
     e(i + 1) = de + e(i);
     s(k) = 1 - s(k);
   }
@@ -183,7 +183,7 @@ arma::rowvec findpath_cpp(
       k = u(i);
 
       // update energy
-      de = -(1 - 2 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
+      de = -(1.0 - 2.0 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
       e(i + 1) = de + e(i);
       s(k) = 1 - s(k);
     }
@@ -327,7 +327,7 @@ arma::mat ridge(
 
       for (arma::uword m = 0; m < epath.n_elem - 1; ++m) {
         ed = epath(m + 1) - epath(m);
-        cost += std::exp(ed) - 1.0;
+        cost += std::max(0.0, std::exp(ed) - 1.0);
       }
 
       if (ess0 > ess1) {
