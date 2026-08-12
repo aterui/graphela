@@ -21,22 +21,22 @@ arma::rowvec stpd(
 ) {
   // ---- declare ----
   // {scalar}
-  // e: temporary energy scalar, dynamic updates
-  // emin: candidate energy minimum after flipping
-  // idx: species index that reduces the energy most
+  // e: current energy
+  // emin: minimum energy after one possible flip
+  // idx: index of the species that gives the largest energy decrease
   double e = energy(state, alpha, beta);
   double emin;
   arma::uword idx;
 
   // {vector}
-  // eflip: vector of energy after a flip of species "i"
-  // sign: sign vector for a flip of species "i"
-  // s: temporary state vector, dynamic updates
+  // eflip: energy after flipping each species
+  // sign: sign vector associated with each possible flip
+  // s: current state
   arma::rowvec eflip, sign;
   arma::rowvec s = state;
 
   // ---- steepest descent ----
-  while(true) {
+  while (true) {
     sign = (1 - 2 * s);
     eflip = ((-alpha - s * beta) % sign) + e;
     emin = eflip.min();
@@ -44,11 +44,11 @@ arma::rowvec stpd(
     if (print)
       Rcpp::Rcout << e << " -> " << emin << "\n";
 
-    // break if no improvement in energy
+    // stop if no flip decreases energy
     if (emin >= e)
       break;
 
-    // identify index to flip
+    // identify the species that gives the largest energy decrease
     idx = eflip.index_min();
 
     // flip 0/1
