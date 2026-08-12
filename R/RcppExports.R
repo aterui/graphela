@@ -9,16 +9,16 @@ stpd <- function(state, alpha, beta, print = FALSE) {
     .Call('_graphela_stpd', PACKAGE = 'graphela', state, alpha, beta, print)
 }
 
-rss <- function(alpha, beta, n = 20000L) {
-    .Call('_graphela_rss', PACKAGE = 'graphela', alpha, beta, n)
+rss <- function(alpha, beta, n = 10000L, replace = TRUE) {
+    .Call('_graphela_rss', PACKAGE = 'graphela', alpha, beta, n, replace)
 }
 
-searchR <- function(s0, s1, alpha, beta, temp = 1, r = 0.01, n = 10000L) {
-    .Call('_graphela_searchR', PACKAGE = 'graphela', s0, s1, alpha, beta, temp, r, n)
+findpath <- function(s0, s1, alpha, beta, temp = 1, r = 0.01, n = 10000L) {
+    .Call('_graphela_findpath', PACKAGE = 'graphela', s0, s1, alpha, beta, temp, r, n)
 }
 
-ridge <- function(ss, alpha, beta, temp = 1, r = 0.01, n = 10000L) {
-    .Call('_graphela_ridge', PACKAGE = 'graphela', ss, alpha, beta, temp, r, n)
+ridge <- function(sse, alpha, beta, temp = 1, r = 0.01, n = 10000L) {
+    .Call('_graphela_ridge', PACKAGE = 'graphela', sse, alpha, beta, temp, r, n)
 }
 
 find_shallow <- function(pem) {
