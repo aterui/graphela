@@ -11,22 +11,22 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// energy
-double energy(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta);
-RcppExport SEXP _graphela_energy(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
+// energy_cpp
+double energy_cpp(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta);
+RcppExport SEXP _graphela_energy_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::rowvec& >::type state(stateSEXP);
     Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type beta(betaSEXP);
-    rcpp_result_gen = Rcpp::wrap(energy(state, alpha, beta));
+    rcpp_result_gen = Rcpp::wrap(energy_cpp(state, alpha, beta));
     return rcpp_result_gen;
 END_RCPP
 }
-// stpd
-arma::rowvec stpd(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta, bool print);
-RcppExport SEXP _graphela_stpd(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP printSEXP) {
+// stpd_cpp
+arma::rowvec stpd_cpp(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta, bool print);
+RcppExport SEXP _graphela_stpd_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP printSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,13 +34,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< bool >::type print(printSEXP);
-    rcpp_result_gen = Rcpp::wrap(stpd(state, alpha, beta, print));
+    rcpp_result_gen = Rcpp::wrap(stpd_cpp(state, alpha, beta, print));
     return rcpp_result_gen;
 END_RCPP
 }
-// rss
-arma::mat rss(arma::rowvec alpha, arma::mat beta, const arma::uword n, const bool replace);
-RcppExport SEXP _graphela_rss(SEXP alphaSEXP, SEXP betaSEXP, SEXP nSEXP, SEXP replaceSEXP) {
+// rss_cpp
+arma::mat rss_cpp(arma::rowvec alpha, arma::mat beta, const arma::uword n, const bool replace);
+RcppExport SEXP _graphela_rss_cpp(SEXP alphaSEXP, SEXP betaSEXP, SEXP nSEXP, SEXP replaceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -48,13 +48,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type beta(betaSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type n(nSEXP);
     Rcpp::traits::input_parameter< const bool >::type replace(replaceSEXP);
-    rcpp_result_gen = Rcpp::wrap(rss(alpha, beta, n, replace));
+    rcpp_result_gen = Rcpp::wrap(rss_cpp(alpha, beta, n, replace));
     return rcpp_result_gen;
 END_RCPP
 }
-// findpath
-Rcpp::List findpath(const arma::rowvec& s0, const arma::rowvec& s1, const arma::rowvec& alpha, const arma::mat& beta, double temp, const double r, const arma::uword n);
-RcppExport SEXP _graphela_findpath(SEXP s0SEXP, SEXP s1SEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP nSEXP) {
+// findpath_cpp
+Rcpp::List findpath_cpp(const arma::rowvec& s0, const arma::rowvec& s1, const arma::rowvec& alpha, const arma::mat& beta, double temp, const double r, const arma::uword n);
+RcppExport SEXP _graphela_findpath_cpp(SEXP s0SEXP, SEXP s1SEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -65,13 +65,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type temp(tempSEXP);
     Rcpp::traits::input_parameter< const double >::type r(rSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(findpath(s0, s1, alpha, beta, temp, r, n));
+    rcpp_result_gen = Rcpp::wrap(findpath_cpp(s0, s1, alpha, beta, temp, r, n));
     return rcpp_result_gen;
 END_RCPP
 }
-// ridge
-arma::mat ridge(const arma::mat& sse, const arma::rowvec& alpha, const arma::mat& beta, double temp, const double r, const arma::uword n);
-RcppExport SEXP _graphela_ridge(SEXP sseSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP nSEXP) {
+// ridge_cpp
+arma::mat ridge_cpp(const arma::mat& sse, const arma::rowvec& alpha, const arma::mat& beta, double temp, const double r, const arma::uword n);
+RcppExport SEXP _graphela_ridge_cpp(SEXP sseSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -81,42 +81,42 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type temp(tempSEXP);
     Rcpp::traits::input_parameter< const double >::type r(rSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type n(nSEXP);
-    rcpp_result_gen = Rcpp::wrap(ridge(sse, alpha, beta, temp, r, n));
+    rcpp_result_gen = Rcpp::wrap(ridge_cpp(sse, alpha, beta, temp, r, n));
     return rcpp_result_gen;
 END_RCPP
 }
-// find_shallow
-arma::uword find_shallow(const arma::mat& pem);
-RcppExport SEXP _graphela_find_shallow(SEXP pemSEXP) {
+// find_shallow_cpp
+arma::uword find_shallow_cpp(const arma::mat& pem);
+RcppExport SEXP _graphela_find_shallow_cpp(SEXP pemSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type pem(pemSEXP);
-    rcpp_result_gen = Rcpp::wrap(find_shallow(pem));
+    rcpp_result_gen = Rcpp::wrap(find_shallow_cpp(pem));
     return rcpp_result_gen;
 END_RCPP
 }
-// prune
-Rcpp::List prune(arma::mat& pem, const double th);
-RcppExport SEXP _graphela_prune(SEXP pemSEXP, SEXP thSEXP) {
+// prune_cpp
+Rcpp::List prune_cpp(arma::mat& pem, const double th);
+RcppExport SEXP _graphela_prune_cpp(SEXP pemSEXP, SEXP thSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat& >::type pem(pemSEXP);
     Rcpp::traits::input_parameter< const double >::type th(thSEXP);
-    rcpp_result_gen = Rcpp::wrap(prune(pem, th));
+    rcpp_result_gen = Rcpp::wrap(prune_cpp(pem, th));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_graphela_energy", (DL_FUNC) &_graphela_energy, 3},
-    {"_graphela_stpd", (DL_FUNC) &_graphela_stpd, 4},
-    {"_graphela_rss", (DL_FUNC) &_graphela_rss, 4},
-    {"_graphela_findpath", (DL_FUNC) &_graphela_findpath, 7},
-    {"_graphela_ridge", (DL_FUNC) &_graphela_ridge, 6},
-    {"_graphela_find_shallow", (DL_FUNC) &_graphela_find_shallow, 1},
-    {"_graphela_prune", (DL_FUNC) &_graphela_prune, 2},
+    {"_graphela_energy_cpp", (DL_FUNC) &_graphela_energy_cpp, 3},
+    {"_graphela_stpd_cpp", (DL_FUNC) &_graphela_stpd_cpp, 4},
+    {"_graphela_rss_cpp", (DL_FUNC) &_graphela_rss_cpp, 4},
+    {"_graphela_findpath_cpp", (DL_FUNC) &_graphela_findpath_cpp, 7},
+    {"_graphela_ridge_cpp", (DL_FUNC) &_graphela_ridge_cpp, 6},
+    {"_graphela_find_shallow_cpp", (DL_FUNC) &_graphela_find_shallow_cpp, 1},
+    {"_graphela_prune_cpp", (DL_FUNC) &_graphela_prune_cpp, 2},
     {NULL, NULL, 0}
 };
 
