@@ -19,7 +19,14 @@ stpd <- function(
     alpha,
     beta
 ) {
+  ## validate input
+  check_dim(
+    state = state,
+    alpha = alpha,
+    beta = beta
+  )
 
+  ## run cpp function
   stpd_cpp(
     state = state,
     alpha = alpha,
@@ -53,7 +60,14 @@ rss <- function(
     n = 10000,
     replace = TRUE
 ) {
+  ## validate input
+  check_dim(
+    state = NULL,
+    alpha = alpha,
+    beta = beta
+  )
 
+  ## run cpp function
   rss_cpp(
     alpha = alpha,
     beta = beta,
@@ -106,7 +120,19 @@ ridge <- function(
     r = 0.001,
     iter = 10000
 ) {
+  ## validate input
+  check_dim(
+    state = NULL,
+    alpha = alpha,
+    beta = beta
+  )
 
+  ## validate matrix
+  s <- ncol(m) - 1
+  if (s != length(alpha) || !all(dim(beta) == c(s, s)))
+    stop("Invalid matrix dimension: `m' must contain `length(alpha) + 1` columns")
+
+  ## run analysis
   res <- ridge_cpp(
     sse = m,
     alpha = alpha,
@@ -144,6 +170,19 @@ ridge <- function(
 
 prune <- function(m, th = 0.2) {
 
+  ## validate input
+  cnm <- c("ss1",
+           "ss2",
+           "e1",
+           "e2",
+           "tp",
+           "cost",
+           "barrier")
+
+  if (any(colnames(m) != cnm))
+    stop("The matrix `m` must conform to the output format of `ridge()`")
+
+  ## run cpp function
   prune_cpp(
     pem = m,
     the = th
