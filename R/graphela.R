@@ -107,7 +107,7 @@ ridge <- function(
     iter = 10000
 ) {
 
-  ridge_cpp(
+  res <- ridge_cpp(
     sse = m,
     alpha = alpha,
     beta = beta,
@@ -116,6 +116,15 @@ ridge <- function(
     n = iter
   )
 
+  colnames(res) <- c("ss1",
+                     "ss2",
+                     "e1",
+                     "e2",
+                     "tp",
+                     "cost",
+                     "barrier")
+
+  return(res)
 }
 
 
