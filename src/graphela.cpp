@@ -76,7 +76,7 @@ arma::mat rss_cpp(
 
   const arma::uword ns = alpha.n_elem;
   const arma::uword nstate = (ns < 32) ? (1ULL << ns) : 0;
-  const arma::uword nr = (ns < 32) ? std::min(nstate, n) : n;
+  const arma::uword nr = (ns < 32 && !replace) ? std::min(nstate, n) : n;
 
   arma::mat m(nr, ns + 1);
   arma::rowvec s(ns);
