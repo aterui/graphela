@@ -1,3 +1,89 @@
+#' Steepest descent method
+#'
+#' @param state A binary row vector of initial state
+#' @param alpha A numeric vector of model parameters controlling the intrinsic
+#'   contribution of each species to system energy.
+#' @param beta A numeric matrix of pairwise interaction parameters among
+#'   species.
+#'
+#' @export
+
+stpd <- function(
+    state,
+    alpha,
+    beta
+) {
+
+  stpd_cpp(
+    state = state,
+    alpha = alpha,
+    beta = beta
+  )
+
+}
+
+#' Identify stable states
+#'
+#' @param alpha A numeric vector of model parameters controlling the intrinsic
+#'   contribution of each species to system energy.
+#' @param beta A numeric matrix of pairwise interaction parameters among
+#'   species.
+#' @param n An integer specifying the number of initial random states.
+#'   Defaults to `10000`.
+#'
+#' @export
+
+rss <- function(
+    alpha,
+    beta,
+    n = 10000,
+    replace = TRUE
+) {
+
+  rss_cpp(
+    alpha = alpha,
+    beta = beta,
+    n = n,
+    replace = replace
+  )
+
+}
+
+#' Identify energy ridge between stable states
+#'
+#' @param m A matrix of stable state vectors. The last column must contain energy of each stable state.
+#' @param alpha A numeric vector of model parameters controlling the intrinsic
+#'   contribution of each species to system energy.
+#' @param beta A numeric matrix of pairwise interaction parameters among
+#'   species.
+#' @param temp
+#' @param r A scalar specifing the cooling rate of the simulated annealing.
+#'   Defaults to `0.001`.
+#' @param iter An integer specifying the number of simulated annealing.
+#'   Defaults to `10000`.
+#'
+#' @export
+
+ridge <- function(
+    m,
+    alpha,
+    beta,
+    temp = 10,
+    r = 0.001,
+    iter = 10000
+) {
+
+  ridge_cpp(
+    sse = m,
+    alpha = alpha,
+    beta = beta,
+    temp = temp,
+    r = r,
+    n = iter
+  )
+
+}
+
 #' Identify ecological basins from stable states and transition dynamics
 #'
 #' Identifies stable states from random or exhaustive sampling, estimates
@@ -19,6 +105,9 @@
 #' @param iter An integer specifying the number of iterations used in the
 #'   ridge search. Defaults to `5000`.
 #' @param th A numeric threshold used to prune transitions. Defaults to `0.2`.
+#'
+#' @useDynLib graphela, .registration = TRUE
+#' @importFrom Rcpp evalCpp
 #'
 #' @return A list containing:
 #'   \describe{
