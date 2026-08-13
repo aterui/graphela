@@ -1,10 +1,16 @@
 #' Steepest descent method
 #'
-#' @param state A binary row vector of initial state
+#' Identifies a local minimum in system energy using the steepest descent
+#' algorithm, starting from a specified initial state.
+#'
+#' @param state A binary row vector specifying the initial state.
 #' @param alpha A numeric vector of model parameters controlling the intrinsic
 #'   contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
+#'
+#' @return A binary state vector corresponding to the stable state reached by
+#'   the steepest descent algorithm, along with its energy in the last element.
 #'
 #' @export
 
@@ -22,14 +28,23 @@ stpd <- function(
 
 }
 
+
 #' Identify stable states
+#'
+#' Identifies stable states by applying the steepest descent algorithm to
+#' randomly sampled initial states.
 #'
 #' @param alpha A numeric vector of model parameters controlling the intrinsic
 #'   contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
-#' @param n An integer specifying the number of initial random states.
+#' @param n An integer specifying the number of initial states to sample.
 #'   Defaults to `10000`.
+#' @param replace A logical value indicating whether identical initial states can be
+#'   sampled more than once. Defaults to `TRUE`.
+#'
+#' @return A matrix of unique stable states and their corresponding energy
+#'   values.
 #'
 #' @export
 
@@ -49,18 +64,27 @@ rss <- function(
 
 }
 
+
 #' Identify energy ridge between stable states
 #'
-#' @param m A matrix of stable state vectors. The last column must contain energy of each stable state.
+#' Identifies the energy ridge separating pairs of stable states using
+#' simulated annealing.
+#'
+#' @param m A matrix of stable states. The last column must contain the
+#'   energy of each stable state.
 #' @param alpha A numeric vector of model parameters controlling the intrinsic
 #'   contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
-#' @param temp
-#' @param r A scalar specifing the cooling rate of the simulated annealing.
+#' @param temp A numeric value specifying the initial temperature for simulated
+#'   annealing. Defaults to `10`.
+#' @param r A numeric value specifying the cooling rate of simulated annealing.
 #'   Defaults to `0.001`.
-#' @param iter An integer specifying the number of simulated annealing.
-#'   Defaults to `10000`.
+#' @param iter An integer specifying the number of simulated annealing
+#'   iterations. Defaults to `10000`.
+#'
+#' @return A matrix describing the energy ridges between pairs of stable
+#'   states.
 #'
 #' @export
 
