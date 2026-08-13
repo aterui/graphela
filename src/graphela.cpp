@@ -4,7 +4,7 @@
 // [[Rcpp::plugins(cpp17)]]
 
 // [[Rcpp::export]]
-double energy(
+double energy_cpp(
     const arma::rowvec& state,
     const arma::rowvec& alpha,
     const arma::mat& beta
@@ -13,7 +13,7 @@ double energy(
 }
 
 // [[Rcpp::export]]
-arma::rowvec stpd(
+arma::rowvec stpd_cpp(
     const arma::rowvec& state,
     const arma::rowvec& alpha,
     const arma::mat& beta,
@@ -24,7 +24,7 @@ arma::rowvec stpd(
   // e: current energy
   // emin: minimum energy after one possible flip
   // idx: index of the species that gives the largest energy decrease
-  double e = energy(state, alpha, beta);
+  double e = energy_cpp(state, alpha, beta);
   double emin;
   arma::uword idx;
 
@@ -60,7 +60,7 @@ arma::rowvec stpd(
 }
 
 // [[Rcpp::export]]
-arma::mat rss(
+arma::mat rss_cpp(
     arma::rowvec alpha,
     arma::mat beta,
     const arma::uword n = 10000,
@@ -117,14 +117,14 @@ arma::mat rss(
       );
     }
 
-    ss = stpd(s, alpha, beta);
+    ss = stpd_cpp(s, alpha, beta);
     m.row(k) = ss;
   }
 
   return m;
 }
 
-arma::rowvec findpath_cpp(
+arma::rowvec findpath_inline(
     const arma::rowvec& s0,
     const arma::rowvec& s1,
     const arma::rowvec& alpha,
@@ -170,7 +170,7 @@ arma::rowvec findpath_cpp(
 
   // initialize
   ms0.row(0) = s0;
-  e0(0) = energy(s0, alpha, beta);
+  e0(0) = energy_cpp(s0, alpha, beta);
 
   // ---- initial path ----
   // s: current state
@@ -273,7 +273,7 @@ arma::rowvec findpath_cpp(
 }
 
 // [[Rcpp::export]]
-Rcpp::List findpath(
+Rcpp::List findpath_cpp(
     const arma::rowvec& s0,
     const arma::rowvec& s1,
     const arma::rowvec& alpha,
@@ -285,7 +285,7 @@ Rcpp::List findpath(
   arma::mat mse;
   arma::vec omega;
 
-  arma::rowvec stip = findpath_cpp(
+  arma::rowvec stip = findpath_inline(
     s0, s1, alpha, beta,
     temp, r, n,
     &mse, &omega
@@ -346,7 +346,7 @@ arma::mat ridge(
     for (arma::uword j = i + 1; j < nss; ++j) {
 
       // calculate path from state i to state j
-      stip = findpath_cpp(
+      stip = findpath_inline(
         ss.row(i), ss.row(j),
         alpha, beta,
         temp, r, n,
@@ -388,7 +388,7 @@ arma::mat ridge(
 }
 
 // [[Rcpp::export]]
-arma::uword find_shallow(
+arma::uword find_shallow_cpp(
     const arma::mat& pem
 ) {
   // ---- key column indices ----
@@ -409,7 +409,7 @@ arma::uword find_shallow(
 }
 
 // [[Rcpp::export]]
-Rcpp::List prune(
+Rcpp::List prune_cpp(
     arma::mat& pem,
     const double th = 0.2
 ) {
@@ -425,7 +425,7 @@ Rcpp::List prune(
 
   while (true) {
     // find deepest and shallowest basin
-    arma::uword r = find_shallow(pem);
+    arma::uword r = find_shallow_cpp(pem);
     dmax = pem.col(idx_depth).max();
     dmin = pem(r, idx_depth);
 
