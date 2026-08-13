@@ -43,8 +43,7 @@ stpd <- function(
 #' @param replace A logical value indicating whether identical initial states can be
 #'   sampled more than once. Defaults to `TRUE`.
 #'
-#' @return A matrix of unique stable states and their corresponding energy
-#'   values.
+#' @return A matrix of stable states and their corresponding energy values.
 #'
 #' @export
 
@@ -63,6 +62,7 @@ rss <- function(
   )
 
 }
+
 
 #' Identify energy ridges between stable states
 #'
@@ -126,7 +126,6 @@ ridge <- function(
 
   return(res)
 }
-
 
 #' Prune shallow energy basins
 #'
