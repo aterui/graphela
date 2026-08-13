@@ -1,5 +1,48 @@
-
+#' Identify ecological basins from stable states and transition dynamics
+#'
+#' Identifies stable states from random or exhaustive sampling, estimates
+#' transitions among stable states, prunes weak transitions, and summarizes
+#' the resulting basins by their stable-state configuration, energy, depth,
+#' and width.
+#'
+#' @param alpha A numeric vector of model parameters controlling the intrinsic
+#'   contribution of each species to system energy.
+#' @param beta A numeric matrix of pairwise interaction parameters among
+#'   species.
+#' @param n An integer specifying the number of states sampled by `rss`.
+#'   Defaults to `10000`.
+#' @param replace A logical value indicating whether initial states are sampled
+#'   with replacement. Defaults to `TRUE`.
+#' @param temp A numeric value controlling the temperature used in the ridge
+#'   search. Defaults to `10`.
+#' @param r A numeric value controlling the ridge search. Defaults to `0.01`.
+#' @param iter An integer specifying the number of iterations used in the
+#'   ridge search. Defaults to `5000`.
+#' @param th A numeric threshold used to prune transitions. Defaults to `0.2`.
+#'
+#' @return A list containing:
+#'   \describe{
+#'     \item{state}{A matrix containing the species-state configuration of
+#'       each basin.}
+#'     \item{energy}{A data frame summarizing each basin, including its
+#'       stable-state ID (`ss`), energy, basin depth, and basin width.}
+#'   }
+#'
+#' @details
+#' Stable states are first identified using `rss` and sorted by energy.
+#' Unique stable states are then used as starting points for `ridge`, and
+#' transitions are pruned using `prune`.
+#'
+#' Basin depth is calculated from the minimum energy barrier among transitions
+#' originating from each stable state. Both directions of each transition are
+#' considered so that the barrier is evaluated relative to the energy of the
+#' starting state.
+#'
+#' Basin width is calculated as the proportion of sampled states assigned to
+#' each final basin after applying the transition map.
+#'
 #' @export
+
 basin <- function(
     alpha,
     beta,
@@ -75,7 +118,7 @@ basin <- function(
 
   list(
     ## stable-state configurations for the final basins
-    state = m_mss[, seq_len(length(alpha)), drop = FALSE],
+    state = m_mss,
 
     ## summary of energy, depth, and width for each basin
     energy = data.frame(
