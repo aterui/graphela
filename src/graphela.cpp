@@ -299,7 +299,7 @@ Rcpp::List findpath_cpp(
 }
 
 // [[Rcpp::export]]
-arma::mat ridge(
+arma::mat ridge_cpp(
     const arma::mat& sse,
     const arma::rowvec& alpha,
     const arma::mat& beta,
