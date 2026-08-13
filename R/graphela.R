@@ -64,11 +64,12 @@ rss <- function(
 
 }
 
-
-#' Identify energy ridge between stable states
+#' Identify energy ridges between stable states
 #'
 #' Identifies the energy ridge separating pairs of stable states using
-#' simulated annealing.
+#' simulated annealing. For each pair of stable states, the function identifies
+#' a tipping point along the transition path and calculates the associated
+#' path cost and energy barrier.
 #'
 #' @param m A matrix of stable states. The last column must contain the
 #'   energy of each stable state.
@@ -83,8 +84,17 @@ rss <- function(
 #' @param iter An integer specifying the number of simulated annealing
 #'   iterations. Defaults to `10000`.
 #'
-#' @return A matrix describing the energy ridges between pairs of stable
-#'   states.
+#' @return A matrix with one row for each pair of stable states and seven
+#'   columns:
+#'   \describe{
+#'     \item{ss1}{Index of the shallower stable state.}
+#'     \item{ss2}{Index of the deeper stable state.}
+#'     \item{e1}{Energy of the shallower stable state.}
+#'     \item{e2}{Energy of the deeper stable state.}
+#'     \item{tp}{Energy at the tipping point along the transition path.}
+#'     \item{cost}{Energy cost of the transition path.}
+#'     \item{barrier}{Energy barrier separating the two stable states.}
+#'   }
 #'
 #' @export
 
@@ -104,6 +114,31 @@ ridge <- function(
     temp = temp,
     r = r,
     n = iter
+  )
+
+}
+
+
+#' Prune shallow energy basins
+#'
+#' Removes stable states associated with shallow energy basins based on an
+#' energy-barrier threshold.
+#'
+#' @param m A matrix of pairwise stable-state relationships returned by
+#'   [ridge()]. The matrix must conform to the output format of [ridge()].
+#' @param th A numeric value between 0 and 1 specifying the threshold used
+#'   to prune shallow basins. Defaults to `0.2`.
+#'
+#' @return A matrix containing the stable-state relationships remaining after
+#'   shallow basins have been pruned.
+#'
+#' @export
+
+prune <- function(m, th = 0.2) {
+
+  prune_cpp(
+    pem = m,
+    the = th
   )
 
 }
