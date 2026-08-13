@@ -369,8 +369,8 @@ basin <- function(
     n = 10000,
     replace = TRUE,
     temp = 10,
-    r = 0.01,
-    iter = 5000,
+    r = 0.001,
+    iter = 10000,
     th = 0.2
 ) {
 
