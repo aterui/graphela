@@ -35,6 +35,7 @@ energy <- function(
   )
 }
 
+
 #' Steepest descent method
 #'
 #' Identifies a local minimum in system energy using the steepest descent
@@ -118,6 +119,7 @@ rss <- function(
   )
 
 }
+
 
 #' Identify a transition path between stable states
 #'
@@ -239,7 +241,7 @@ ridge <- function(
     stop("Invalid matrix dimension: `m' must contain `length(alpha) + 1` columns")
 
   if (!all(m[, seq_len(s)] %in% c(0, 1)))
-      stop("`state` must be a binary numeric vector.")
+    stop("`state` must be a binary numeric vector.")
 
   ## run analysis
   res <- ridge_cpp(
@@ -261,6 +263,7 @@ ridge <- function(
 
   return(res)
 }
+
 
 #' Prune shallow energy basins
 #'
@@ -301,6 +304,7 @@ prune <- function(m, th = 0.2) {
   )
 
 }
+
 
 #' #' Identify ecological basins from stable states and transition dynamics
 #' #'
