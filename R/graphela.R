@@ -117,19 +117,25 @@ rss <- function(
     stop("`replace` must be a single logical value.")
 
   ## run cpp function
-  run <- function() {
+  if (is.null(seed)) {
     rss_cpp(
       alpha = alpha,
       beta = beta,
       n = n,
       replace = replace
     )
+  } else {
+    withr::with_seed(
+      seed,
+      rss_cpp(
+        alpha = alpha,
+        beta = beta,
+        n = n,
+        replace = replace
+      )
+    )
   }
 
-  if (is.null(seed))
-    run()
-  else
-    withr::with_seed(seed, run())
 }
 
 
@@ -349,6 +355,9 @@ prune <- function(m, th = 0.2) {
 #'   contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
+#' @param cnm An optional character vector of names for the species-state
+#'   variables. If `NULL`, variables are named sequentially from `1` to
+#'   the number of species.
 #' @param n An integer specifying the number of initial random states to estimate stable states.
 #'   Defaults to `10000`.
 #' @param replace A logical value indicating whether initial random states are sampled
@@ -368,9 +377,11 @@ prune <- function(m, th = 0.2) {
 #' @return A list containing:
 #'   \describe{
 #'     \item{state}{A matrix containing the species-state configuration of
-#'       each basin.}
+#'       each final basin.}
 #'     \item{energy}{A data frame summarizing each basin, including its
 #'       stable-state ID (`ss`), energy, basin depth, and basin width.}
+#'     \item{tps}{A matrix containing the tipping-point states associated
+#'       with transitions among the final basins.}
 #'   }
 #'
 #' @details
@@ -406,7 +417,8 @@ basin <- function(
     alpha = alpha,
     beta = beta,
     n = n,
-    replace = replace
+    replace = replace,
+    seed = seed
   )
 
   s <- length(alpha)
