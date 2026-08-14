@@ -81,6 +81,8 @@ stpd <- function(
 #'   Defaults to `10000`.
 #' @param replace A logical value indicating whether identical initial states can be
 #'   sampled more than once. Defaults to `TRUE`.
+#' @param seed An optional integer used to control random-number
+#'   generation. If `NULL`, the current random-number state is used.
 #'
 #' @useDynLib graphela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
@@ -93,7 +95,8 @@ rss <- function(
     alpha,
     beta,
     n = 10000,
-    replace = TRUE
+    replace = TRUE,
+    seed = NULL
 ) {
   ## validate input
   check_dim(
@@ -107,19 +110,26 @@ rss <- function(
       !is.finite(n) ||
       n < 1 ||
       n != as.integer(n))
-    stop("`iter` must be a positive integer.")
+    stop("`n` must be a positive integer.")
 
-  if (!is.logical(replace))
-    stop("`replace` must be logical.")
+  if (length(replace) != 1 ||
+      !is.logical(replace))
+    stop("`replace` must be a single logical value.")
 
   ## run cpp function
-  rss_cpp(
-    alpha = alpha,
-    beta = beta,
-    n = n,
-    replace = replace
-  )
+  run <- function() {
+    rss_cpp(
+      alpha = alpha,
+      beta = beta,
+      n = n,
+      replace = replace
+    )
+  }
 
+  if (is.null(seed))
+    run()
+  else
+    withr::with_seed(seed, run())
 }
 
 
