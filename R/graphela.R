@@ -164,21 +164,17 @@ findpath <- function(
     iter
 ) {
   ## validate input
-  lapply(
-    list(s0, s1),
-    FUN = function(s) {
-      check_dim(
-        state = s,
-        alpha = alpha,
-        beta = beta
-      )
-    })
+  check_dim(
+    state = rbind(s0, s1),
+    alpha = alpha,
+    beta = beta
+  )
 
-  if (temp < 0)
-    stop("`temp` must be positive numeric.")
-
-  if (r < 0 || r > 1)
-    stop("`r` must be between 0 and 1.")
+  check_sa(
+    temp = temp,
+    r = r,
+    iter = iter
+  )
 
   ## run cpp function
   path <- findpath_cpp(
