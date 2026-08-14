@@ -144,8 +144,8 @@ check_sa <- function(temp, r, iter) {
     stop("`temp` must be a positive numeric value.")
 
   if (!is.numeric(r) || length(r) != 1 ||
-      !is.finite(r) || r <= 0)
-    stop("`r` must be a positive numeric value.")
+      r > 1 || r < 0)
+    stop("`r` must be [0, 1].")
 
   if (length(iter) != 1 ||
       !is.numeric(iter) ||
