@@ -131,7 +131,7 @@ arma::rowvec findpath_inline(
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const arma::uword n = 10000,
+    const arma::uword iter = 10000,
     arma::mat* mse_out = nullptr,
     arma::vec* omega_out = nullptr
 ) {
@@ -161,7 +161,7 @@ arma::rowvec findpath_inline(
   // stip: state vector and energy at the highest-energy point
   arma::uvec idx(2);
   arma::vec e0(nf + 1);
-  arma::vec omega(n);
+  arma::vec omega(iter);
   arma::rowvec stip(ns + 1);
 
   // {matrix}
@@ -201,7 +201,7 @@ arma::rowvec findpath_inline(
   omega(0) = e.max();
 
   // ---- simulated annealing ----
-  for (arma::uword t = 1; t < n; ++t) {
+  for (arma::uword t = 1; t < iter; ++t) {
 
     // idx: indices for swap
     u = path;
@@ -280,14 +280,14 @@ Rcpp::List findpath_cpp(
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const arma::uword n = 10000
+    const arma::uword iter = 10000
 ) {
   arma::mat mse;
   arma::vec omega;
 
   arma::rowvec stip = findpath_inline(
     s0, s1, alpha, beta,
-    temp, r, n,
+    temp, r, iter,
     &mse, &omega
   );
 
@@ -305,7 +305,7 @@ Rcpp::List ridge_cpp(
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const arma::uword n = 10000,
+    const arma::uword iter = 10000,
     Rcpp::Nullable<arma::uvec> index = R_NilValue
 ) {
   // ---- declare ----
@@ -360,7 +360,7 @@ Rcpp::List ridge_cpp(
       stip = findpath_inline(
         ss.row(i), ss.row(j),
         alpha, beta,
-        temp, r, n,
+        temp, r, iter,
         &mse
       );
 
