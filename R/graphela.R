@@ -228,9 +228,11 @@ ridge <- function(
     m,
     alpha,
     beta,
+    focus = c("barrier", "state"),
     temp = 10,
     r = 0.001,
-    iter = 10000
+    iter = 10000,
+    seed = NULL
 ) {
   ## validate input
   check_dim(
@@ -251,24 +253,55 @@ ridge <- function(
     stop("`state` must be a binary numeric vector.")
 
   ## run analysis
-  res <- ridge_cpp(
-    sse = m,
-    alpha = alpha,
-    beta = beta,
-    temp = temp,
-    r = r,
-    n = iter
-  )
+  if (is.null(seed)) {
 
-  colnames(res) <- c("ss1",
-                     "ss2",
-                     "e1",
-                     "e2",
-                     "tp",
-                     "cost",
-                     "barrier")
+    res <- withr::with_seed(seed, {
+      ridge_cpp(
+        sse = m,
+        alpha = alpha,
+        beta = beta,
+        temp = temp,
+        r = r,
+        iter = iter
+      )
+    })
 
-  return(res)
+  } else {
+
+    res <- ridge_cpp(
+      sse = m,
+      alpha = alpha,
+      beta = beta,
+      temp = temp,
+      r = r,
+      iter = iter
+    )
+
+  }
+
+  if (focus == "barrier") {
+    cout <- res$combn
+    colnames(cout) <- c("ss1",
+                        "ss2",
+                        "e1",
+                        "e2",
+                        "tp",
+                        "cost",
+                        "barrier")
+  } else {
+    cout <- res$state
+
+    if (is.null(colnames(m))) {
+      colnames(cout)[seq_len(s)] <- as.character(seq_len(s))
+    } else {
+      colnames(cout)[seq_len(s)] <- colnames(m)[seq_len(s)]
+    }
+
+    colnames(cout)[s + 1] <- "energy"
+    colnames(cout)[c(s + 2, s + 3)] <- c("ss1", "ss2")
+  }
+
+  return(cout)
 }
 
 
@@ -473,4 +506,3 @@ basin <- function(
     )
   )
 }
-
