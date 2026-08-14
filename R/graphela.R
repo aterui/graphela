@@ -423,35 +423,52 @@ basin <- function(
           depth = NA,
           width = 1.0,
           row.names = NULL
-        )
+        ),
+
+        ## tipping point state matrix
+        tps = NULL
       )
     )
 
   }
 
   ## ridge and pruning
-  list_p <- ridge(
+  list_r <- ridge(
     m = m_uss,
     alpha = alpha,
     beta = beta,
-    focus = "barrier",
+    focus = "all",
     temp = temp,
     r = r,
     iter = iter,
     seed = seed
-  ) |>
-    prune(th = th)
+  )
+
+  list_ss <- prune(
+    m = list_r$barrier,
+    th = th
+  )
+
+  ## keep tipping points for basins not pruned
+  ss_keep <- unique(c(list_ss$barrier[, 1:2]))
+  tp_keep <- apply(
+    X = list_r$state[, c("ss1", "ss2")],
+    MARGIN = 1,
+    \(x) all(x %in% ss_keep)
+  )
+
+  m_tps <- list_r$state[tp_keep, , drop = FALSE]
 
   ## basin depth
   ## each row represents a transition between two stable states:
   ## ss1 -> ss2, with energies e1 and e2 and tipping-point energy tp.
-  m_tp <- list_p$barrier[, 1:5, drop = FALSE]
+  m_tpe <- list_ss$barrier[, 1:5, drop = FALSE]
 
   ## include both directions of each transition so that each stable
   ## state can be evaluated as the starting (shallower) state.
   m_depth <- rbind(
-    m_tp,
-    m_tp[, c(2, 1, 4, 3, 5)]
+    m_tpe,
+    m_tpe[, c(2, 1, 4, 3, 5)]
   ) |>
     transform(depth = tp - e1)
 
@@ -466,10 +483,10 @@ basin <- function(
   ## merge the stable-state IDs through the merging map.
   v_merge <- v_ss
 
-  if (!is.null(list_p$map)) {
+  if (!is.null(list_ss$map)) {
 
-    for (i in seq_len(nrow(list_p$map))) {
-      v_merge[v_merge == list_p$map[i, 1]] <- list_p$map[i, 2]
+    for (i in seq_len(nrow(list_ss$map))) {
+      v_merge[v_merge == list_ss$map[i, 1]] <- list_ss$map[i, 2]
     }
 
   }
@@ -489,6 +506,9 @@ basin <- function(
       depth = v_depth[as.character(idx_mss)],
       width = tabulate(v_merge)[idx_mss] / n,
       row.names = NULL
-    )
+    ),
+
+    ## tipping point state matrix
+    tps = m_tps
   )
 }
