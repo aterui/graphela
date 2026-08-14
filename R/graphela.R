@@ -61,11 +61,7 @@ stpd <- function(
     beta
 ) {
   ## validate input
-  check_dim(
-    state = state,
-    alpha = alpha,
-    beta = beta
-  )
+  check_dim(state, alpha, beta)
 
   ## run cpp function
   stpd_cpp(
