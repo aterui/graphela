@@ -200,6 +200,9 @@ findpath <- function(
 #'   contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
+#' @param focus A character string specifying the output format.
+#' `"barrier"` returns energy barriers for each pair of stable states (see Details).
+#' `"state"` returns state vectors of tipping points, along with their energy values.
 #' @param temp A numeric value specifying the initial temperature for simulated
 #'   annealing. Defaults to `10`.
 #' @param r A numeric value specifying the cooling rate of simulated annealing.
@@ -241,16 +244,30 @@ ridge <- function(
     beta = beta
   )
 
+  focus <- match.arg(focus)
+
   ## validate matrix
+  if (!is.matrix(m))
+    stop("`m` must be a matrix.")
+
+  if (ncol(m) < 2)
+    stop("`m` must contain at least one state variable and one energy column.")
+
   if (nrow(m) == 1)
     stop("Only one stable state: no ridge can be defined.")
 
   s <- ncol(m) - 1
   if (s != length(alpha) || !all(dim(beta) == c(s, s)))
-    stop("Invalid matrix dimension: `m' must contain `length(alpha) + 1` columns")
+    stop("Invalid matrix dimension: `m` must contain `length(alpha) + 1` columns")
 
   if (!all(m[, seq_len(s)] %in% c(0, 1)))
     stop("`state` must be a binary numeric vector.")
+
+  if (!is.numeric(m[, ncol(m)]))
+    stop("The last column of `m` must contain numeric energy values.")
+
+  if (anyNA(m))
+    stop("`m` cannot contain missing values.")
 
   ## run analysis
   if (!is.null(seed)) {
