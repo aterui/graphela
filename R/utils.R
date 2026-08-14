@@ -95,7 +95,7 @@ check_sse <- function(
 ) {
 
   if (!is.matrix(sse))
-    stop("The stable state matrix must be a matrix.")
+    stop("The stable state input must be a matrix.")
 
   if (nrow(sse) < min_rows)
     stop("The stable state matrix must contain at least ", min_rows, " row(s).")
