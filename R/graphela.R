@@ -253,7 +253,7 @@ ridge <- function(
     stop("`state` must be a binary numeric vector.")
 
   ## run analysis
-  if (is.null(seed)) {
+  if (!is.null(seed)) {
 
     res <- withr::with_seed(seed, {
       ridge_cpp(
@@ -279,8 +279,9 @@ ridge <- function(
 
   }
 
+  cout <- res[[focus]]
+
   if (focus == "barrier") {
-    cout <- res$combn
     colnames(cout) <- c("ss1",
                         "ss2",
                         "e1",
@@ -289,16 +290,19 @@ ridge <- function(
                         "cost",
                         "barrier")
   } else {
-    cout <- res$state
-
     if (is.null(colnames(m))) {
-      colnames(cout)[seq_len(s)] <- as.character(seq_len(s))
+      colnames(cout) <- c(
+        as.character(seq_len(s)),
+        "energy",
+        "ss1", "ss2"
+      )
+
     } else {
       colnames(cout)[seq_len(s)] <- colnames(m)[seq_len(s)]
+      colnames(cout)[s + 1] <- "energy"
+      colnames(cout)[c(s + 2, s + 3)] <- c("ss1", "ss2")
     }
 
-    colnames(cout)[s + 1] <- "energy"
-    colnames(cout)[c(s + 2, s + 3)] <- c("ss1", "ss2")
   }
 
   return(cout)
@@ -426,7 +430,7 @@ basin <- function(
   m_uss <- unique(m_ss)
 
   if (nrow(m_uss) == 1) {
-  ## if only one stable state
+    ## if only one stable state
     return(
       list(
         ## stable-state configurations for the final basins
