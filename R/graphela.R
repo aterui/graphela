@@ -334,17 +334,27 @@ ridge <- function(
 
 prune <- function(m, th = 0.2) {
 
-  ## validate input
-  cnm <- c("ss1",
-           "ss2",
-           "e1",
-           "e2",
-           "tp",
-           "cost",
-           "barrier")
+  ## expected output format from ridge()
+  cnm <- c(
+    "ss1",
+    "ss2",
+    "e1",
+    "e2",
+    "tp",
+    "cost",
+    "barrier"
+  )
 
-  if (any(colnames(m) != cnm))
-    stop("The matrix `m` must conform to the output format of `ridge()`")
+  ## validate input
+  if (!is.matrix(m) || !is.numeric(m))
+    stop("`m` must be a numeric matrix.")
+
+  if (ncol(m) != length(cnm) ||
+      !identical(colnames(m), cnm))
+    stop("`m` must conform to the 'barrier' format of `ridge()`.")
+
+  if (!is.numeric(th) || length(th) != 1L || is.na(th) || th < 0)
+    stop("`th` must be a single non-negative numeric value.")
 
   ## run cpp function
   res <- prune_cpp(
@@ -352,10 +362,10 @@ prune <- function(m, th = 0.2) {
     th = th
   )
 
-  colnames(res$pem) <- cnm
-  return(res)
-}
+  colnames(res$barrier) <- cnm
 
+  res
+}
 
 #' Identify ecological basins from stable states and transition dynamics
 #'
@@ -413,7 +423,8 @@ basin <- function(
     temp = 10,
     r = 0.001,
     iter = 10000,
-    th = 0.2
+    th = 0.2,
+    seed = NULL,
 ) {
 
   ## stable states
@@ -425,7 +436,8 @@ basin <- function(
   )
 
   ## sort stable states by energy
-  m_ss <- m_ss[order(m_ss[, ncol(m_ss)]), ]
+  idx <- order(m_ss[, ncol(m_ss)])
+  m_ss <- m_ss[idx, ]
 
   ## assign unique integer IDs to stable states based on energy
   v_ss <- as.numeric(factor(m_ss[, ncol(m_ss)]))
@@ -459,28 +471,30 @@ basin <- function(
     m = m_uss,
     alpha = alpha,
     beta = beta,
+    focus = "barrier",
     temp = temp,
     r = r,
-    iter = iter
+    iter = iter,
+    seed = seed
   ) |>
     prune(th = th)
 
   ## basin depth
   ## each row represents a transition between two stable states:
   ## ss1 -> ss2, with energies e1 and e2 and tipping-point energy tp.
-  pem <- list_p$pem[, 1:5, drop = FALSE]
+  m_tp <- list_p$barrier[, 1:5, drop = FALSE]
 
   ## include both directions of each transition so that each stable
   ## state can be evaluated as the starting (shallower) state.
   m_depth <- rbind(
-    pem,
-    pem[, c(2, 1, 4, 3, 5)]
+    m_tp,
+    m_tp[, c(2, 1, 4, 3, 5)]
   ) |>
-    transform(b = tp - e1)
+    transform(depth = tp - e1)
 
   ## minimum basin depth among all transitions originating from each state
   v_depth <- tapply(
-    m_depth[, "b"],
+    m_depth[, "depth"],
     m_depth[, "ss1"],
     min
   )
