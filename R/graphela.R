@@ -209,6 +209,7 @@ findpath <- function(
 #'   Defaults to `0.001`.
 #' @param iter An integer specifying the number of simulated annealing
 #'   iterations. Defaults to `10000`.
+#' @param seed An optional integer used to control random-number generation.
 #'
 #' @useDynLib graphela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
@@ -238,36 +239,19 @@ ridge <- function(
     seed = NULL
 ) {
   ## validate input
-  check_dim(
-    state = NULL,
+  focus <- match.arg(focus)
+
+  check_sse(
+    state = m,
     alpha = alpha,
     beta = beta
   )
 
-  focus <- match.arg(focus)
-
-  ## validate matrix
-  if (!is.matrix(m))
-    stop("`m` must be a matrix.")
-
-  if (ncol(m) < 2)
-    stop("`m` must contain at least one state variable and one energy column.")
-
-  if (nrow(m) == 1)
-    stop("Only one stable state: no ridge can be defined.")
-
-  s <- ncol(m) - 1
-  if (s != length(alpha) || !all(dim(beta) == c(s, s)))
-    stop("Invalid matrix dimension: `m` must contain `length(alpha) + 1` columns")
-
-  if (!all(m[, seq_len(s)] %in% c(0, 1)))
-    stop("`state` must be a binary numeric vector.")
-
-  if (!is.numeric(m[, ncol(m)]))
-    stop("The last column of `m` must contain numeric energy values.")
-
-  if (anyNA(m))
-    stop("`m` cannot contain missing values.")
+  check_sa(
+    temp = temp,
+    r = r,
+    iter = iter
+  )
 
   ## run analysis
   if (!is.null(seed)) {
@@ -296,6 +280,7 @@ ridge <- function(
 
   }
 
+  ## format output
   cout <- res[[focus]]
 
   if (focus == "barrier") {
@@ -307,22 +292,18 @@ ridge <- function(
                         "cost",
                         "barrier")
   } else {
-    if (is.null(colnames(m))) {
-      colnames(cout) <- c(
-        as.character(seq_len(s)),
-        "energy",
-        "ss1", "ss2"
-      )
 
-    } else {
-      colnames(cout)[seq_len(s)] <- colnames(m)[seq_len(s)]
-      colnames(cout)[s + 1] <- "energy"
-      colnames(cout)[c(s + 2, s + 3)] <- c("ss1", "ss2")
-    }
+    state_names <- colnames(m)[seq_len(s)]
+
+    if (is.null(state_names))
+      state_names <- as.character(seq_len(s))
+
+    colnames(cout) <- c(state_names, "energy", "ss1", "ss2")
 
   }
 
-  return(cout)
+  ## return
+  cout
 }
 
 
