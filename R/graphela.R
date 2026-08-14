@@ -167,7 +167,7 @@ findpath <- function(
     beta = beta,
     temp = temp,
     r = r,
-    n = iter
+    iter = iter
   )
 
   path$omega <- drop(path$omega)
@@ -319,7 +319,7 @@ prune <- function(m, th = 0.2) {
 
   ## run cpp function
   res <- prune_cpp(
-    pem = m,
+    barrier = m,
     th = th
   )
 
@@ -349,6 +349,8 @@ prune <- function(m, th = 0.2) {
 #' @param iter An integer specifying the number of iterations used in the
 #'   ridge search. Defaults to `10000`.
 #' @param th A numeric threshold used to prune shallow basins. Defaults to `0.2`.
+#' @param seed An optional integer used to control random-number
+#'   generation. If `NULL`, the current random-number state is used.
 #'
 #' @useDynLib graphela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
@@ -385,7 +387,7 @@ basin <- function(
     r = 0.001,
     iter = 10000,
     th = 0.2,
-    seed = NULL,
+    seed = NULL
 ) {
 
   ## stable states
