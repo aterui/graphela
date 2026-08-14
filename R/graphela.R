@@ -164,17 +164,8 @@ findpath <- function(
     iter
 ) {
   ## validate input
-  check_dim(
-    state = rbind(s0, s1),
-    alpha = alpha,
-    beta = beta
-  )
-
-  check_sa(
-    temp = temp,
-    r = r,
-    iter = iter
-  )
+  check_dim(rbind(s0, s1), alpha, beta)
+  check_sa(temp, r, iter)
 
   ## run cpp function
   path <- findpath_cpp(
