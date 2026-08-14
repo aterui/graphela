@@ -417,20 +417,20 @@ Rcpp::List ridge_cpp(
 
 // [[Rcpp::export]]
 arma::uword find_shallow_cpp(
-    const arma::mat& pem
+    const arma::mat& barrier
 ) {
   // ---- key column indices ----
   // idx_depth: column index for basin depth
   // idx_cost: column index for path energy cost
-  const arma::uword idx_depth = pem.n_cols - 1;
-  const arma::uword idx_cost = pem.n_cols - 2;
+  const arma::uword idx_depth = barrier.n_cols - 1;
+  const arma::uword idx_cost = barrier.n_cols - 2;
 
   // identify rows with the minimum basin depth
   arma::uvec idx_sh =
-    arma::find(pem.col(idx_depth) == pem.col(idx_depth).min());
+    arma::find(barrier.col(idx_depth) == barrier.col(idx_depth).min());
 
   // select the minimum path cost among the shallowest candidates
-  arma::mat candid = pem.rows(idx_sh);
+  arma::mat candid = barrier.rows(idx_sh);
   arma::uword r = idx_sh(candid.col(idx_cost).index_min());
 
   return r;
