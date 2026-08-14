@@ -438,42 +438,42 @@ arma::uword find_shallow_cpp(
 
 // [[Rcpp::export]]
 Rcpp::List prune_cpp(
-    arma::mat& pem,
+    arma::mat& combn,
     const double th = 0.2
 ) {
   // ---- declare ----
   // idx_depth: column index for basin depth
   // idx_rm: identifier of the basin to be removed
   // dmax, dmin: maximum and minimum basin depth
-  arma::mat map(pem.n_rows, 2);
-  arma::uword idx_depth = pem.n_cols - 1;
+  arma::mat map(combn.n_rows, 2);
+  arma::uword idx_depth = combn.n_cols - 1;
   arma::uword idx_rm;
   arma::uword k = 0;
   double dmax, dmin;
 
   while (true) {
     // find deepest and shallowest basin
-    arma::uword r = find_shallow_cpp(pem);
-    dmax = pem.col(idx_depth).max();
-    dmin = pem(r, idx_depth);
+    arma::uword r = find_shallow_cpp(combn);
+    dmax = combn.col(idx_depth).max();
+    dmin = combn(r, idx_depth);
 
     // stop if the shallowest basin is sufficiently deep
     if (dmin >= th * dmax)
       break;
 
     // identify basin to be removed
-    idx_rm = static_cast<arma::uword>(pem(r, 0));
+    idx_rm = static_cast<arma::uword>(combn(r, 0));
 
     // retain pairs not involving the shallow basin
     arma::uvec keep =
       arma::find(
-        (pem.col(0) != idx_rm) && (pem.col(1) != idx_rm)
+        (combn.col(0) != idx_rm) && (combn.col(1) != idx_rm)
       );
 
     // record basin mapping for merge
-    map(k, 0) = pem(r, 0); // shallower basin
-    map(k, 1) = pem(r, 1); // deeper basin
-    pem = pem.rows(keep);
+    map(k, 0) = combn(r, 0); // shallower basin
+    map(k, 1) = combn(r, 1); // deeper basin
+    combn = combn.rows(keep);
 
     k++;
   }
@@ -483,13 +483,13 @@ Rcpp::List prune_cpp(
 
   if (k == 0) {
     return Rcpp::List::create(
-      Rcpp::Named("pem") = pem,
+      Rcpp::Named("combn") = combn,
       Rcpp::Named("map") = R_NilValue
     );
   }
 
   return Rcpp::List::create(
-    Rcpp::Named("pem") = pem,
+    Rcpp::Named("combn") = combn,
     Rcpp::Named("map") = map
   );
 }
