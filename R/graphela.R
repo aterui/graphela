@@ -110,6 +110,16 @@ rss <- function(
     beta = beta
   )
 
+  if (length(n) != 1 ||
+      !is.numeric(n) ||
+      !is.finite(n) ||
+      n < 1 ||
+      n != as.integer(n))
+    stop("`iter` must be a positive integer.")
+
+  if (!is.logical(replace))
+    stop("`replace` must be logical.")
+
   ## run cpp function
   rss_cpp(
     alpha = alpha,
