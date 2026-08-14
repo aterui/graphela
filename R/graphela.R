@@ -189,7 +189,8 @@ findpath <- function(
 
   path$omega <- drop(path$omega)
 
-  return(path)
+  ## return
+  path
 }
 
 
