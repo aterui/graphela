@@ -196,33 +196,36 @@ findpath <- function(
 
 #' Identify energy ridges between stable states
 #'
-#' Identifies the energy ridge separating pairs of stable states using
-#' simulated annealing. For each pair of stable states, the function identifies
-#' a tipping point along the transition path and calculates the associated
-#' path cost and energy barrier.
+#' Identifies energy ridges separating pairs of stable states using
+#' simulated annealing. For each pair of stable states, the function
+#' identifies a tipping point along the transition path and calculates
+#' the associated path cost and energy barrier.
 #'
-#' @param m A matrix of stable states. The last column must contain the
-#'   energy of each stable state.
-#' @param alpha A numeric vector of model parameters controlling the intrinsic
-#'   contribution of each species to system energy.
+#' @param m A matrix of stable states. Each row represents a stable state,
+#'   and the last column must contain its energy.
+#' @param alpha A numeric vector of model parameters controlling the
+#'   intrinsic contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
-#' @param focus A character string specifying the output format.
-#' `"barrier"` returns energy barriers for each pair of stable states (see Details).
-#' `"state"` returns state vectors of tipping points, along with their energy values.
-#' @param temp A numeric value specifying the initial temperature for simulated
-#'   annealing. Defaults to `10`.
-#' @param r A numeric value specifying the cooling rate of simulated annealing.
-#'   Defaults to `0.001`.
+#' @param focus A character string specifying which results to return.
+#'   `"barrier"` returns energy-ridge information for each pair of stable
+#'   states, `"state"` returns the tipping-point states and associated
+#'   information, and `"all"` returns both as a list. Defaults to
+#'   `"barrier"`.
+#' @param temp A numeric value specifying the initial temperature for
+#'   simulated annealing. Defaults to `10`.
+#' @param r A numeric value specifying the cooling rate of simulated
+#'   annealing. Defaults to `0.001`.
 #' @param iter An integer specifying the number of simulated annealing
 #'   iterations. Defaults to `10000`.
-#' @param seed An optional integer used to control random-number generation.
+#' @param seed An optional integer used to control random-number
+#'   generation. If `NULL`, the current random-number state is used.
 #'
 #' @useDynLib graphela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
-#' @return A matrix with one row for each pair of stable states and seven
-#'   columns:
+#' @return If `focus = "barrier"`, a matrix with one row for each pair
+#'   of stable states and seven columns:
 #'   \describe{
 #'     \item{ss1}{Index of the shallower stable state.}
 #'     \item{ss2}{Index of the deeper stable state.}
@@ -232,6 +235,10 @@ findpath <- function(
 #'     \item{cost}{Energy cost of the transition path.}
 #'     \item{barrier}{Energy barrier separating the two stable states.}
 #'   }
+#'   If `focus = "state"`, a matrix containing the tipping-point state
+#'   vectors, their energies, and the corresponding stable-state indices.
+#'   If `focus = "all"`, a list containing both `"barrier"` and `"state"`
+#'   matrices.
 #'
 #' @export
 
@@ -239,7 +246,7 @@ ridge <- function(
     m,
     alpha,
     beta,
-    focus = c("barrier", "state"),
+    focus = c("barrier", "state", "all"),
     temp = 10,
     r = 0.001,
     iter = 10000,
@@ -247,36 +254,12 @@ ridge <- function(
 ) {
   ## validate input
   focus <- match.arg(focus)
-
-  check_sse(
-    state = m,
-    alpha = alpha,
-    beta = beta
-  )
-
-  check_sa(
-    temp = temp,
-    r = r,
-    iter = iter
-  )
+  s <- check_sse(m, alpha, beta)
+  check_sa(temp, r, iter)
 
   ## run analysis
-  if (!is.null(seed)) {
-
-    res <- withr::with_seed(seed, {
-      ridge_cpp(
-        sse = m,
-        alpha = alpha,
-        beta = beta,
-        temp = temp,
-        r = r,
-        iter = iter
-      )
-    })
-
-  } else {
-
-    res <- ridge_cpp(
+  run <- function() {
+    ridge_cpp(
       sse = m,
       alpha = alpha,
       beta = beta,
@@ -284,33 +267,34 @@ ridge <- function(
       r = r,
       iter = iter
     )
+  }
 
+  res <- if (is.null(seed)) {
+    run()
+  } else {
+    withr::with_seed(seed, run())
   }
 
   ## format output
-  cout <- res[[focus]]
+  ## - barrier matrix
+  colnames(res$barrier) <- c(
+    "ss1", "ss2", "e1", "e2", "tp", "cost", "barrier"
+  )
 
-  if (focus == "barrier") {
-    colnames(cout) <- c("ss1",
-                        "ss2",
-                        "e1",
-                        "e2",
-                        "tp",
-                        "cost",
-                        "barrier")
-  } else {
+  ## - state matrix
+  state_names <- colnames(m)[seq_len(s)]
 
-    state_names <- colnames(m)[seq_len(s)]
+  if (is.null(state_names))
+    state_names <- as.character(seq_len(s))
 
-    if (is.null(state_names))
-      state_names <- as.character(seq_len(s))
-
-    colnames(cout) <- c(state_names, "energy", "ss1", "ss2")
-
-  }
+  colnames(res$state) <- c(state_names, "energy", "ss1", "ss2")
 
   ## return
-  cout
+  if (focus == "all")
+    res
+  else
+    res[[focus]]
+
 }
 
 
@@ -336,13 +320,7 @@ prune <- function(m, th = 0.2) {
 
   ## expected output format from ridge()
   cnm <- c(
-    "ss1",
-    "ss2",
-    "e1",
-    "e2",
-    "tp",
-    "cost",
-    "barrier"
+    "ss1", "ss2", "e1", "e2", "tp", "cost", "barrier"
   )
 
   ## validate input
