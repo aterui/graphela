@@ -37,8 +37,8 @@ arma::rowvec stpd_cpp(
 
   // ---- steepest descent ----
   while (true) {
-    sign = (1 - 2 * s);
-    eflip = ((-alpha - s * beta) % sign) + e;
+    sign = (1.0 - 2.0 * s);
+    eflip = (-(alpha + s * beta) % sign) + e;
     emin = eflip.min();
 
     if (print)
