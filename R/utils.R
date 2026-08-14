@@ -31,6 +31,12 @@ check_dim <- function(
   if (!is.matrix(beta) || !is.numeric(beta))
     stop("`beta` must be a numeric matrix.")
 
+  if (!all(diag(beta) == 0))
+    stop("The diagonal elements of `beta` must be zero")
+
+  if (!isTRUE(all.equal(beta, t(beta), tolerance = 1e-10)))
+    stop("`beta` must be symmetric.")
+
   s <- length(alpha)
 
   if (!all(dim(beta) == c(s, s)))
