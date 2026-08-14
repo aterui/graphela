@@ -381,6 +381,7 @@ prune <- function(m, th = 0.2) {
 basin <- function(
     alpha,
     beta,
+    cnm = NULL,
     n = 10000,
     replace = TRUE,
     temp = 10,
@@ -398,12 +399,29 @@ basin <- function(
     replace = replace
   )
 
+  s <- length(alpha)
+
+  if (is.null(cnm))
+    state_names <- as.character(seq_len(s))
+  else
+    state_names <- cnm
+
+  colnames(m_ss) <- c(state_names, "energy")
+
   ## sort stable states by energy
   idx <- order(m_ss[, ncol(m_ss)])
   m_ss <- m_ss[idx, ]
 
   ## assign unique integer IDs to stable states based on energy
-  v_ss <- as.numeric(factor(m_ss[, ncol(m_ss)]))
+  label <- apply(
+    m_ss[, seq_len(s)],
+    MARGIN = 1,
+    \(x) paste0(x, collapse = "")
+  )
+
+  v_ss <- factor(label, levels = unique(label)) |>
+    as.numeric()
+
   rownames(m_ss) <- v_ss
 
   ## retain unique stable states
