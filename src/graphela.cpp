@@ -345,11 +345,11 @@ Rcpp::List ridge_cpp(
 
   // {matrix}
   // ss: matrix of stable states
-  // combn: output matrix for energy/barrier summary
+  // barrier: output matrix for energy/barrier summary
   // rs: output matrix for "tipping point" states of all stable state pairs
   // mse: state sequence and energy along the selected path
   arma::mat ss = sse.cols(0, ns - 1);
-  arma::mat combn(nr, 7);
+  arma::mat barrier(nr, 7);
   arma::mat rs(nr, ns + 3);
   arma::mat mse;
 
@@ -383,34 +383,34 @@ Rcpp::List ridge_cpp(
 
       if (ess0 > ess1) {
         // higher-energy state
-        combn(k, 0) = idx(i);
+        barrier(k, 0) = idx(i);
         rs(k, ns + 1) = idx(i);
 
         // lower-energy state
-        combn(k, 1) = idx(j);
+        barrier(k, 1) = idx(j);
         rs(k, ns + 2) = idx(j);
       } else {
         // higher-energy state
-        combn(k, 0) = idx(j);
+        barrier(k, 0) = idx(j);
         rs(k, ns + 1) = idx(j);
 
         // lower-energy state
-        combn(k, 1) = idx(i);
+        barrier(k, 1) = idx(i);
         rs(k, ns + 2) = idx(i);
       }
 
-      combn(k, 2) = std::max(ess0, ess1); // higher stable-state energy
-      combn(k, 3) = std::min(ess0, ess1); // lower stable-state energy
-      combn(k, 4) = etip; // tipping-point energy
-      combn(k, 5) = cost; // cumulative energy cost
-      combn(k, 6) = etip - combn(k, 2); // energy barrier
+      barrier(k, 2) = std::max(ess0, ess1); // higher stable-state energy
+      barrier(k, 3) = std::min(ess0, ess1); // lower stable-state energy
+      barrier(k, 4) = etip; // tipping-point energy
+      barrier(k, 5) = cost; // cumulative energy cost
+      barrier(k, 6) = etip - barrier(k, 2); // energy barrier
 
       ++k;
     }
   }
 
   return Rcpp::List::create(
-    Rcpp::Named("combn") = combn,
+    Rcpp::Named("barrier") = barrier,
     Rcpp::Named("state") = rs
   );
 }
