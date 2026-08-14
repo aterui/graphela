@@ -299,13 +299,14 @@ Rcpp::List findpath_cpp(
 }
 
 // [[Rcpp::export]]
-arma::mat ridge_cpp(
+Rcpp::List ridge_cpp(
     const arma::mat& sse,
     const arma::rowvec& alpha,
     const arma::mat& beta,
     double temp = 1,
     const double r = 0.01,
-    const arma::uword n = 10000
+    const arma::uword n = 10000,
+    Rcpp::Nullable<arma::uvec> index = R_NilValue
 ) {
   // ---- declare ----
   // {scalar}
@@ -327,19 +328,29 @@ arma::mat ridge_cpp(
     Rcpp::stop("sse must contain ns species columns plus one energy column.");
 
   // {vector}
+  // idx: index for stable states (if any)
   // stip: state vector and energy at a tipping point
   // e: energy of each stable state
   // epath: energy along the selected path
+  arma::uvec idx;
   arma::rowvec stip;
   arma::vec e = sse.col(sse.n_cols - 1);
   arma::vec epath;
 
+  if (index.isNull()) {
+    idx = arma::regspace<arma::uvec>(1, nss);
+  } else {
+    idx = index;
+  }
+
   // {matrix}
   // ss: matrix of stable states
-  // combn: output matrix for all state pairs
+  // combn: output matrix for energy/barrier summary
+  // rs: output matrix for "tipping point" states of all stable state pairs
   // mse: state sequence and energy along the selected path
   arma::mat ss = sse.cols(0, ns - 1);
   arma::mat combn(nr, 7);
+  arma::mat rs(nr, ns + 3);
   arma::mat mse;
 
   for (arma::uword i = 0; i < nss - 1; ++i) {
@@ -353,6 +364,10 @@ arma::mat ridge_cpp(
         &mse
       );
 
+      // stack state vectors
+      rs.row(k).cols(0, ns) = stip;
+
+      // barrier summary
       ess0 = e(i);
       ess1 = e(j);
 
@@ -367,11 +382,21 @@ arma::mat ridge_cpp(
       }
 
       if (ess0 > ess1) {
-        combn(k, 0) = i + 1; // higher-energy state
-        combn(k, 1) = j + 1; // lower-energy state
+        // higher-energy state
+        combn(k, 0) = idx(i);
+        rs(k, ns + 1) = idx(i);
+
+        // lower-energy state
+        combn(k, 1) = idx(j);
+        rs(k, ns + 2) = idx(j);
       } else {
-        combn(k, 0) = j + 1; // higher-energy state
-        combn(k, 1) = i + 1; // lower-energy state
+        // higher-energy state
+        combn(k, 0) = idx(j);
+        rs(k, ns + 1) = idx(j);
+
+        // lower-energy state
+        combn(k, 1) = idx(i);
+        rs(k, ns + 2) = idx(i);
       }
 
       combn(k, 2) = std::max(ess0, ess1); // higher stable-state energy
@@ -384,7 +409,10 @@ arma::mat ridge_cpp(
     }
   }
 
-  return combn;
+  return Rcpp::List::create(
+    Rcpp::Named("combn") = combn,
+    Rcpp::Named("state") = rs
+  );
 }
 
 // [[Rcpp::export]]
