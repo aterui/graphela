@@ -438,42 +438,42 @@ arma::uword find_shallow_cpp(
 
 // [[Rcpp::export]]
 Rcpp::List prune_cpp(
-    arma::mat& combn,
+    arma::mat& barrier,
     const double th = 0.2
 ) {
   // ---- declare ----
   // idx_depth: column index for basin depth
   // idx_rm: identifier of the basin to be removed
   // dmax, dmin: maximum and minimum basin depth
-  arma::mat map(combn.n_rows, 2);
-  arma::uword idx_depth = combn.n_cols - 1;
+  arma::mat map(barrier.n_rows, 2);
+  arma::uword idx_depth = barrier.n_cols - 1;
   arma::uword idx_rm;
   arma::uword k = 0;
   double dmax, dmin;
 
   while (true) {
     // find deepest and shallowest basin
-    arma::uword r = find_shallow_cpp(combn);
-    dmax = combn.col(idx_depth).max();
-    dmin = combn(r, idx_depth);
+    arma::uword r = find_shallow_cpp(barrier);
+    dmax = barrier.col(idx_depth).max();
+    dmin = barrier(r, idx_depth);
 
     // stop if the shallowest basin is sufficiently deep
     if (dmin >= th * dmax)
       break;
 
     // identify basin to be removed
-    idx_rm = static_cast<arma::uword>(combn(r, 0));
+    idx_rm = static_cast<arma::uword>(barrier(r, 0));
 
     // retain pairs not involving the shallow basin
     arma::uvec keep =
       arma::find(
-        (combn.col(0) != idx_rm) && (combn.col(1) != idx_rm)
+        (barrier.col(0) != idx_rm) && (barrier.col(1) != idx_rm)
       );
 
     // record basin mapping for merge
-    map(k, 0) = combn(r, 0); // shallower basin
-    map(k, 1) = combn(r, 1); // deeper basin
-    combn = combn.rows(keep);
+    map(k, 0) = barrier(r, 0); // shallower basin
+    map(k, 1) = barrier(r, 1); // deeper basin
+    barrier = barrier.rows(keep);
 
     k++;
   }
@@ -483,13 +483,13 @@ Rcpp::List prune_cpp(
 
   if (k == 0) {
     return Rcpp::List::create(
-      Rcpp::Named("combn") = combn,
+      Rcpp::Named("barrier") = barrier,
       Rcpp::Named("map") = R_NilValue
     );
   }
 
   return Rcpp::List::create(
-    Rcpp::Named("combn") = combn,
+    Rcpp::Named("barrier") = barrier,
     Rcpp::Named("map") = map
   );
 }
