@@ -257,8 +257,8 @@ ridge <- function(
   check_sa(temp, r, iter)
 
   ## run analysis
-  run <- function() {
-    ridge_cpp(
+  if (is.null(seed)) {
+    res <- ridge_cpp(
       sse = m,
       alpha = alpha,
       beta = beta,
@@ -266,12 +266,18 @@ ridge <- function(
       r = r,
       iter = iter
     )
-  }
-
-  res <- if (is.null(seed)) {
-    run()
   } else {
-    withr::with_seed(seed, run())
+    res <- withr::with_seed(
+      seed,
+      ridge_cpp(
+        sse = m,
+        alpha = alpha,
+        beta = beta,
+        temp = temp,
+        r = r,
+        iter = iter
+      )
+    )
   }
 
   ## format output
