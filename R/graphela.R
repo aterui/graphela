@@ -117,23 +117,19 @@ rss <- function(
     stop("`replace` must be a single logical value.")
 
   ## run cpp function
-  if (is.null(seed)) {
+  run <- function() {
     rss_cpp(
       alpha = alpha,
       beta = beta,
       n = n,
       replace = replace
     )
+  }
+
+  if (is.null(seed)) {
+    run()
   } else {
-    withr::with_seed(
-      seed,
-      rss_cpp(
-        alpha = alpha,
-        beta = beta,
-        n = n,
-        replace = replace
-      )
-    )
+    withr::with_seed(seed, run())
   }
 
 }
@@ -257,8 +253,8 @@ ridge <- function(
   check_sa(temp, r, iter)
 
   ## run analysis
-  if (is.null(seed)) {
-    res <- ridge_cpp(
+  run <- function() {
+    ridge_cpp(
       sse = m,
       alpha = alpha,
       beta = beta,
@@ -266,18 +262,12 @@ ridge <- function(
       r = r,
       iter = iter
     )
+  }
+
+  if (is.null(seed)) {
+    res <- run()
   } else {
-    res <- withr::with_seed(
-      seed,
-      ridge_cpp(
-        sse = m,
-        alpha = alpha,
-        beta = beta,
-        temp = temp,
-        r = r,
-        iter = iter
-      )
-    )
+    res <- withr::with_seed(seed, run())
   }
 
   ## format output
