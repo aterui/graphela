@@ -4,7 +4,7 @@
 \alias{rss}
 \title{Identify stable states}
 \usage{
-rss(alpha, beta, n = 10000, replace = TRUE)
+rss(alpha, beta, n = 10000, replace = TRUE, seed = NULL)
 }
 \arguments{
 \item{alpha}{A numeric vector of model parameters controlling the intrinsic
@@ -18,6 +18,9 @@ Defaults to \code{10000}.}
 
 \item{replace}{A logical value indicating whether identical initial states can be
 sampled more than once. Defaults to \code{TRUE}.}
+
+\item{seed}{An optional integer used to control random-number
+generation. If \code{NULL}, the current random-number state is used.}
 }
 \value{
 A matrix of stable states and their corresponding energy values.

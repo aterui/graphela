@@ -13,19 +13,19 @@ rss_cpp <- function(alpha, beta, n = 10000L, replace = TRUE) {
     .Call(`_graphela_rss_cpp`, alpha, beta, n, replace)
 }
 
-findpath_cpp <- function(s0, s1, alpha, beta, temp = 1, r = 0.01, n = 10000L) {
-    .Call(`_graphela_findpath_cpp`, s0, s1, alpha, beta, temp, r, n)
+findpath_cpp <- function(s0, s1, alpha, beta, temp = 1, r = 0.01, iter = 10000L) {
+    .Call(`_graphela_findpath_cpp`, s0, s1, alpha, beta, temp, r, iter)
 }
 
-ridge_cpp <- function(sse, alpha, beta, temp = 1, r = 0.01, n = 10000L) {
-    .Call(`_graphela_ridge_cpp`, sse, alpha, beta, temp, r, n)
+ridge_cpp <- function(sse, alpha, beta, temp = 1, r = 0.01, iter = 10000L, index = NULL) {
+    .Call(`_graphela_ridge_cpp`, sse, alpha, beta, temp, r, iter, index)
 }
 
-find_shallow_cpp <- function(pem) {
-    .Call(`_graphela_find_shallow_cpp`, pem)
+find_shallow_cpp <- function(barrier) {
+    .Call(`_graphela_find_shallow_cpp`, barrier)
 }
 
-prune_cpp <- function(pem, th = 0.2) {
-    .Call(`_graphela_prune_cpp`, pem, th)
+prune_cpp <- function(barrier, th = 0.2) {
+    .Call(`_graphela_prune_cpp`, barrier, th)
 }
 

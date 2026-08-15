@@ -7,12 +7,14 @@
 basin(
   alpha,
   beta,
+  cnm = NULL,
   n = 10000,
   replace = TRUE,
   temp = 10,
-  r = 0.01,
-  iter = 5000,
-  th = 0.2
+  r = 0.001,
+  iter = 10000,
+  th = 0.2,
+  seed = NULL
 )
 }
 \arguments{
@@ -21,6 +23,10 @@ contribution of each species to system energy.}
 
 \item{beta}{A numeric matrix of pairwise interaction parameters among
 species.}
+
+\item{cnm}{An optional character vector of names for the species-state
+variables. If \code{NULL}, variables are named sequentially from \code{1} to
+the number of species.}
 
 \item{n}{An integer specifying the number of initial random states to estimate stable states.
 Defaults to \code{10000}.}
@@ -37,14 +43,19 @@ search. Defaults to \code{10}.}
 ridge search. Defaults to \code{10000}.}
 
 \item{th}{A numeric threshold used to prune shallow basins. Defaults to \code{0.2}.}
+
+\item{seed}{An optional integer used to control random-number
+generation. If \code{NULL}, the current random-number state is used.}
 }
 \value{
 A list containing:
 \describe{
 \item{state}{A matrix containing the species-state configuration of
-each basin.}
+each final basin.}
 \item{energy}{A data frame summarizing each basin, including its
 stable-state ID (\code{ss}), energy, basin depth, and basin width.}
+\item{tps}{A matrix containing the tipping-point states associated
+with transitions among the final basins.}
 }
 }
 \description{

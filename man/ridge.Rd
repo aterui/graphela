@@ -4,30 +4,48 @@
 \alias{ridge}
 \title{Identify energy ridges between stable states}
 \usage{
-ridge(m, alpha, beta, temp = 10, r = 0.001, iter = 10000)
+ridge(
+  m,
+  alpha,
+  beta,
+  focus = c("barrier", "state", "all"),
+  temp = 10,
+  r = 0.001,
+  iter = 10000,
+  seed = NULL
+)
 }
 \arguments{
-\item{m}{A matrix of stable states. The last column must contain the
-energy of each stable state.}
+\item{m}{A matrix of stable states. Each row represents a stable state,
+and the last column must contain its energy.}
 
-\item{alpha}{A numeric vector of model parameters controlling the intrinsic
-contribution of each species to system energy.}
+\item{alpha}{A numeric vector of model parameters controlling the
+intrinsic contribution of each species to system energy.}
 
 \item{beta}{A numeric matrix of pairwise interaction parameters among
 species.}
 
-\item{temp}{A numeric value specifying the initial temperature for simulated
-annealing. Defaults to \code{10}.}
+\item{focus}{A character string specifying which results to return.
+\code{"barrier"} returns energy-ridge information for each pair of stable
+states, \code{"state"} returns the tipping-point states and associated
+information, and \code{"all"} returns both as a list. Defaults to
+\code{"barrier"}.}
 
-\item{r}{A numeric value specifying the cooling rate of simulated annealing.
-Defaults to \code{0.001}.}
+\item{temp}{A numeric value specifying the initial temperature for
+simulated annealing. Defaults to \code{10}.}
+
+\item{r}{A numeric value specifying the cooling rate of simulated
+annealing. Defaults to \code{0.001}.}
 
 \item{iter}{An integer specifying the number of simulated annealing
 iterations. Defaults to \code{10000}.}
+
+\item{seed}{An optional integer used to control random-number
+generation. If \code{NULL}, the current random-number state is used.}
 }
 \value{
-A matrix with one row for each pair of stable states and seven
-columns:
+If \code{focus = "barrier"}, a matrix with one row for each pair
+of stable states and seven columns:
 \describe{
 \item{ss1}{Index of the shallower stable state.}
 \item{ss2}{Index of the deeper stable state.}
@@ -37,10 +55,14 @@ columns:
 \item{cost}{Energy cost of the transition path.}
 \item{barrier}{Energy barrier separating the two stable states.}
 }
+If \code{focus = "state"}, a matrix containing the tipping-point state
+vectors, their energies, and the corresponding stable-state indices.
+If \code{focus = "all"}, a list containing both \code{"barrier"} and \code{"state"}
+matrices.
 }
 \description{
-Identifies the energy ridge separating pairs of stable states using
-simulated annealing. For each pair of stable states, the function identifies
-a tipping point along the transition path and calculates the associated
-path cost and energy barrier.
+Identifies energy ridges separating pairs of stable states using
+simulated annealing. For each pair of stable states, the function
+identifies a tipping point along the transition path and calculates
+the associated path cost and energy barrier.
 }
