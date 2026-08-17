@@ -340,6 +340,7 @@ prune <- function(m, th = 0.2) {
   res
 }
 
+
 #' Identify basins of attraction
 #'
 #' Identifies stable states from random or exhaustive sampling, estimates
