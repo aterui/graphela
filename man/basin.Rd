@@ -2,7 +2,7 @@
 % Please edit documentation in R/graphela.R
 \name{basin}
 \alias{basin}
-\title{Identify ecological basins from stable states and transition dynamics}
+\title{Identify basins of attraction}
 \usage{
 basin(
   alpha,
@@ -28,52 +28,80 @@ species.}
 variables. If \code{NULL}, variables are named sequentially from \code{1} to
 the number of species.}
 
-\item{n}{An integer specifying the number of initial random states to estimate stable states.
-Defaults to \code{10000}.}
+\item{n}{An integer specifying the number of initial states sampled by
+\code{rss()} to identify stable states. Defaults to \code{10000}.}
 
-\item{replace}{A logical value indicating whether initial random states are sampled
-with replacement. Defaults to \code{TRUE}.}
+\item{replace}{A logical value indicating whether initial states are
+sampled with replacement by \code{rss()}. Defaults to \code{TRUE}.}
 
-\item{temp}{Temperature of simulated annealing in the ridge
-search. Defaults to \code{10}.}
+\item{temp}{A numeric value specifying the initial temperature used for
+simulated annealing in the ridge search. Defaults to \code{10}.}
 
-\item{r}{Cooling rate of simulated annealing the ridge search. Defaults to \code{0.001}.}
+\item{r}{A numeric value specifying the cooling rate used for simulated
+annealing in the ridge search. Defaults to \code{0.001}.}
 
-\item{iter}{An integer specifying the number of iterations used in the
-ridge search. Defaults to \code{10000}.}
+\item{iter}{An integer specifying the maximum number of iterations used
+for each ridge search. Defaults to \code{10000}.}
 
-\item{th}{A numeric threshold used to prune shallow basins. Defaults to \code{0.2}.}
+\item{th}{A numeric threshold used by \code{prune()} to remove shallow
+transitions and merge the corresponding stable states. Defaults to \code{0.2}.}
 
-\item{seed}{An optional integer used to control random-number
-generation. If \code{NULL}, the current random-number state is used.}
+\item{seed}{An optional integer used to control random-number generation
+in \code{rss()} and \code{ridge()}. If \code{NULL}, the current random-number state is
+used.}
 }
 \value{
-A list containing:
+A list containing two components:
 \describe{
-\item{state}{A matrix containing the species-state configuration of
-each final basin.}
-\item{energy}{A data frame summarizing each basin, including its
-stable-state ID (\code{ss}), energy, basin depth, and basin width.}
+\item{pruned}{Results after pruning shallow basins. Contains:
+\describe{
+\item{state}{A matrix containing the species-state configuration
+and energy of each final basin.}
+\item{summary}{A data frame summarizing each final basin, including
+its stable-state ID (\code{ss}), energy, basin depth, and basin width.}
 \item{tps}{A matrix containing the tipping-point states associated
 with transitions among the final basins.}
 }
 }
+\item{raw}{Results before pruning. Contains:
+\describe{
+\item{state}{A matrix containing the unique stable-state
+configurations and their energies identified by \code{rss()}.}
+\item{barrier}{A data frame containing the transition barriers
+identified by \code{ridge()}.}
+\item{tps}{A matrix containing the tipping-point states identified
+by \code{ridge()}.}
+\item{map}{A matrix describing the mapping of stable-state IDs
+before pruning to IDs after merging. \code{NULL} if no merging occurs.}
+}
+}
+}
+}
 \description{
 Identifies stable states from random or exhaustive sampling, estimates
-transitions among stable states, and prunes shallow basins. Summarizes
-the resulting basins by their stable-state configuration, energy, depth,
-and width.
+transition barriers and tipping points among stable states, and prunes
+shallow basins.
+The resulting basins are summarized by their energy, depth, and width.
+Both the pruned results and the underlying unpruned results are retained.
 }
 \details{
 Stable states are first identified using \code{rss()} and sorted by energy.
-Unique stable states are then used to search tipping points between stable states with \code{ridge()}.
-Shallow basins are pruned using \code{prune()}.
+Duplicate stable-state configurations are then removed. If only one unique
+stable state is identified, that state is returned directly without ridge
+searching or pruning.
 
-Basin depth is calculated from the minimum energy barrier among transitions
-originating from each stable state. Both directions of each transition are
-considered so that the barrier is evaluated relative to the energy of the
-starting state.
+When multiple stable states are present, \code{ridge()} is used to identify
+transition barriers and tipping-point states among all unique stable states.
+Shallow basins are subsequently pruned using \code{prune()}. Tipping points are
+retained only for transitions involving stable states that remain after
+pruning.
 
-Basin width is calculated as the proportion of initial random states assigned to
-each final basin.
+Basin depth is calculated as the minimum energy barrier among transitions
+originating from each stable state.
+
+Basin width is calculated as the proportion of the initial stable-state
+assignments from \code{rss()} that belong to each final basin. Stable states
+merged during pruning are therefore combined when calculating basin width.
+
+The returned object also stores \code{alpha}, \code{beta}, and \code{seed} as attributes.
 }
