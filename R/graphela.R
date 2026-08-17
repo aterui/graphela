@@ -340,12 +340,13 @@ prune <- function(m, th = 0.2) {
   res
 }
 
-#' Identify ecological basins from stable states and transition dynamics
+#' Identify basins of attraction
 #'
 #' Identifies stable states from random or exhaustive sampling, estimates
-#' transitions among stable states, and prunes shallow basins. Summarizes
-#' the resulting basins by their stable-state configuration, energy, depth,
-#' and width.
+#' transition barriers and tipping points among stable states, and prunes
+#' shallow basins.
+#' The resulting basins are summarized by their energy, depth, and width.
+#' Both the pruned results and the underlying unpruned results are retained.
 #'
 #' @param alpha A numeric vector of model parameters controlling the intrinsic
 #'   contribution of each species to system energy.
@@ -354,44 +355,71 @@ prune <- function(m, th = 0.2) {
 #' @param cnm An optional character vector of names for the species-state
 #'   variables. If `NULL`, variables are named sequentially from `1` to
 #'   the number of species.
-#' @param n An integer specifying the number of initial random states to estimate stable states.
-#'   Defaults to `10000`.
-#' @param replace A logical value indicating whether initial random states are sampled
-#'   with replacement. Defaults to `TRUE`.
-#' @param temp Temperature of simulated annealing in the ridge
-#'   search. Defaults to `10`.
-#' @param r Cooling rate of simulated annealing the ridge search. Defaults to `0.001`.
-#' @param iter An integer specifying the number of iterations used in the
-#'   ridge search. Defaults to `10000`.
-#' @param th A numeric threshold used to prune shallow basins. Defaults to `0.2`.
-#' @param seed An optional integer used to control random-number
-#'   generation. If `NULL`, the current random-number state is used.
+#' @param n An integer specifying the number of initial states sampled by
+#'   `rss()` to identify stable states. Defaults to `10000`.
+#' @param replace A logical value indicating whether initial states are
+#'   sampled with replacement by `rss()`. Defaults to `TRUE`.
+#' @param temp A numeric value specifying the initial temperature used for
+#'   simulated annealing in the ridge search. Defaults to `10`.
+#' @param r A numeric value specifying the cooling rate used for simulated
+#'   annealing in the ridge search. Defaults to `0.001`.
+#' @param iter An integer specifying the maximum number of iterations used
+#'   for each ridge search. Defaults to `10000`.
+#' @param th A numeric threshold used by `prune()` to remove shallow
+#'   transitions and merge the corresponding stable states. Defaults to `0.2`.
+#' @param seed An optional integer used to control random-number generation
+#'   in `rss()` and `ridge()`. If `NULL`, the current random-number state is
+#'   used.
 #'
 #' @useDynLib graphela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
-#' @return A list containing:
+#' @return A list containing two components:
 #'   \describe{
-#'     \item{state}{A matrix containing the species-state configuration of
-#'       each final basin.}
-#'     \item{energy}{A data frame summarizing each basin, including its
-#'       stable-state ID (`ss`), energy, basin depth, and basin width.}
-#'     \item{tps}{A matrix containing the tipping-point states associated
-#'       with transitions among the final basins.}
+#'     \item{pruned}{Results after pruning shallow basins. Contains:
+#'       \describe{
+#'         \item{state}{A matrix containing the species-state configuration
+#'           and energy of each final basin.}
+#'         \item{summary}{A data frame summarizing each final basin, including
+#'           its stable-state ID (`ss`), energy, basin depth, and basin width.}
+#'         \item{tps}{A matrix containing the tipping-point states associated
+#'           with transitions among the final basins.}
+#'       }
+#'     }
+#'     \item{raw}{Results before pruning. Contains:
+#'       \describe{
+#'         \item{state}{A matrix containing the unique stable-state
+#'           configurations and their energies identified by `rss()`.}
+#'         \item{barrier}{A data frame containing the transition barriers
+#'           identified by `ridge()`.}
+#'         \item{tps}{A matrix containing the tipping-point states identified
+#'           by `ridge()`.}
+#'         \item{map}{A matrix describing the mapping of stable-state IDs
+#'           before pruning to IDs after merging. `NULL` if no merging occurs.}
+#'       }
+#'     }
 #'   }
 #'
 #' @details
 #' Stable states are first identified using `rss()` and sorted by energy.
-#' Unique stable states are then used to search tipping points between stable states with `ridge()`.
-#' Shallow basins are pruned using `prune()`.
+#' Duplicate stable-state configurations are then removed. If only one unique
+#' stable state is identified, that state is returned directly without ridge
+#' searching or pruning.
 #'
-#' Basin depth is calculated from the minimum energy barrier among transitions
-#' originating from each stable state. Both directions of each transition are
-#' considered so that the barrier is evaluated relative to the energy of the
-#' starting state.
+#' When multiple stable states are present, `ridge()` is used to identify
+#' transition barriers and tipping-point states among all unique stable states.
+#' Shallow basins are subsequently pruned using `prune()`. Tipping points are
+#' retained only for transitions involving stable states that remain after
+#' pruning.
 #'
-#' Basin width is calculated as the proportion of initial random states assigned to
-#' each final basin.
+#' Basin depth is calculated as the minimum energy barrier among transitions
+#' originating from each stable state.
+#'
+#' Basin width is calculated as the proportion of the initial stable-state
+#' assignments from `rss()` that belong to each final basin. Stable states
+#' merged during pruning are therefore combined when calculating basin width.
+#'
+#' The returned object also stores `alpha`, `beta`, and `seed` as attributes.
 #'
 #' @export
 
@@ -596,8 +624,11 @@ basin <- function(
 egap <- function(
     b,
     obs,
-    alpha = NULL,
-    beta = NULL
+    temp = NULL,
+    r = NULL,
+    iter = NULL,
+    th = NULL,
+    seed = NULL
 ) {
 
   ## validate input
@@ -640,15 +671,13 @@ egap <- function(
   idx <- sapply(v_match, \(x) which(x == b$pruned$summary$ss))
 
   ## output
-  return(
-    with(b$pruned$summary, {
-      data.frame(
-        gap = v_e - energy[idx],
-        energy = v_e,
-        ss = v_match,
-        bottom = energy[idx]
-      )
-    })
-  )
+  with(b$pruned$summary, {
+    data.frame(
+      gap = v_e - energy[idx],
+      energy = v_e,
+      ss = v_match,
+      bottom = energy[idx]
+    )
+  })
 
 }
