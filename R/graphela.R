@@ -508,6 +508,10 @@ basin <- function(
         ## attributes
         alpha = alpha,
         beta = beta,
+        temp = temp,
+        r = r,
+        iter = iter,
+        th = th,
         seed = seed
       )
     )
@@ -616,6 +620,10 @@ basin <- function(
     ## attributes
     alpha = alpha,
     beta = beta,
+    temp = temp,
+    r = r,
+    iter = iter,
+    th = th,
     seed = seed
   )
 }
