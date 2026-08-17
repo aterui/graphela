@@ -641,12 +641,8 @@ egap <- function(
 ) {
 
   ## validate input
-  if (is.null(alpha))
-    alpha = attr(b, "alpha")
-
-  if (is.null(beta))
-    beta = attr(b, "beta")
-
+  alpha = attr(b, "alpha")
+  beta = attr(b, "beta")
   s <- check_dim(obs, alpha, beta)
 
   ## energy of observed states
