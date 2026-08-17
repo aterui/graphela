@@ -427,12 +427,12 @@ basin <- function(
   colnames(m_ss) <- c(state_names, "energy")
 
   ## sort stable states by energy
-  idx <- order(m_ss[, ncol(m_ss)])
-  m_ss <- m_ss[idx, ]
+  idx <- order(m_ss[, ncol(m_ss), drop = TRUE])
+  m_ss <- m_ss[idx, , drop = FALSE]
 
   ## assign unique integer IDs to stable states based on energy
   label <- apply(
-    m_ss[, seq_len(s)],
+    m_ss[, seq_len(s), drop = FALSE],
     MARGIN = 1,
     \(x) paste0(x, collapse = "")
   )
@@ -449,20 +449,32 @@ basin <- function(
     ## if only one stable state
     return(
       list(
-        ## stable-state configurations for the final basins
-        state = m_uss,
+        pruned = list(
+          ## non-pruned stable states
+          ss = m_uss,
 
-        ## summary of energy, depth, and width for each basin
-        energy = data.frame(
-          ss = 1,
-          energy = m_uss[, ncol(m_uss)],
-          depth = NA,
-          width = 1.0,
-          row.names = NULL
+          ## pruned stable states
+          state = m_uss,
+
+          ## summary of energy, depth, and width for each basin
+          summary = data.frame(
+            ss = 1,
+            energy = m_uss[, ncol(m_uss)],
+            depth = NA,
+            width = 1.0,
+            row.names = NULL
+          ),
+
+          ## tipping point state matrix
+          tps = NULL
         ),
 
-        ## tipping point state matrix
-        tps = NULL
+        raw = list(
+          ss = m_uss,
+          barrier = NULL,
+          tps = NULL,
+          map = NULL
+        )
       )
     )
 
@@ -504,7 +516,7 @@ basin <- function(
   ## state can be evaluated as the starting (shallower) state.
   m_depth <- rbind(
     m_tpe,
-    m_tpe[, c(2, 1, 4, 3, 5)]
+    m_tpe[, c("ss2", "ss1", "e2", "e1", "tp")]
   ) |>
     transform(depth = tp - e1)
 
@@ -517,6 +529,8 @@ basin <- function(
 
   ## basin width
   ## merge the stable-state IDs through the merging map.
+  ## note: this code is sensitive to the row order of the `map` object
+  ## validity affirmed by `prune_cpp()` implementation
   v_merge <- v_ss
 
   if (!is.null(list_ss$map)) {
@@ -532,19 +546,35 @@ basin <- function(
   m_mss <- m_uss[idx_mss, , drop = FALSE]
 
   list(
-    ## stable-state configurations for the final basins
-    state = m_mss,
+    pruned = list(
+      ## pruned stable states
+      state = m_mss,
 
-    ## summary of energy, depth, and width for each basin
-    energy = data.frame(
-      ss = idx_mss,
-      energy = m_mss[, ncol(m_mss)],
-      depth = v_depth[as.character(idx_mss)],
-      width = tabulate(v_merge)[idx_mss] / n,
-      row.names = NULL
+      ## summary of energy, depth, and width for each basin
+      summary = data.frame(
+        ss = idx_mss,
+        energy = m_mss[, ncol(m_mss)],
+        depth = v_depth[as.character(idx_mss)],
+        width = tabulate(v_merge)[idx_mss] / nrow(m_ss),
+        row.names = NULL
+      ),
+
+      ## tipping point state matrix
+      tps = m_tps
     ),
 
-    ## tipping point state matrix
-    tps = m_tps
+    raw = list(
+      ## raw stable states
+      state = m_uss,
+
+      ## ridge information
+      barrier = list_r$barrier,
+
+      ## tipping point state matrix
+      tps = list_r$state,
+
+      ## mapping from raw ss to merged ss
+      map = list_ss$map
+    )
   )
 }
