@@ -448,33 +448,40 @@ basin <- function(
   if (nrow(m_uss) == 1) {
     ## if only one stable state
     return(
-      list(
-        pruned = list(
-          ## pruned stable states
-          state = m_uss,
+      structure(
+        ## main output
+        list(
+          pruned = list(
+            ## pruned stable states
+            state = m_uss,
 
-          ## summary of energy, depth, and width for each basin
-          summary = data.frame(
-            ss = 1,
-            energy = m_uss[, ncol(m_uss)],
-            depth = NA,
-            width = 1.0,
-            row.names = NULL
+            ## summary of energy, depth, and width for each basin
+            summary = data.frame(
+              ss = 1,
+              energy = m_uss[, ncol(m_uss)],
+              depth = NA,
+              width = 1.0,
+              row.names = NULL
+            ),
+
+            ## tipping point state matrix
+            tps = NULL
           ),
 
-          ## tipping point state matrix
-          tps = NULL
+          raw = list(
+            state = m_uss,
+            barrier = NULL,
+            tps = NULL,
+            map = NULL
+          )
         ),
 
-        raw = list(
-          state = m_uss,
-          barrier = NULL,
-          tps = NULL,
-          map = NULL
-        )
+        ## attributes
+        alpha = alpha,
+        beta = beta,
+        seed = seed
       )
     )
-
   }
 
   ## ridge and pruning
@@ -542,37 +549,45 @@ basin <- function(
   idx_mss <- unique(v_merge)
   m_mss <- m_uss[idx_mss, , drop = FALSE]
 
-  list(
-    pruned = list(
-      ## pruned stable states
-      state = m_mss,
+  structure(
+    ## main output
+    list(
+      pruned = list(
+        ## pruned stable states
+        state = m_mss,
 
-      ## summary of energy, depth, and width for each basin
-      summary = data.frame(
-        ss = idx_mss,
-        energy = m_mss[, ncol(m_mss)],
-        depth = v_depth[as.character(idx_mss)],
-        width = tabulate(v_merge)[idx_mss] / nrow(m_ss),
-        row.names = NULL
+        ## summary of energy, depth, and width for each basin
+        summary = data.frame(
+          ss = idx_mss,
+          energy = m_mss[, ncol(m_mss)],
+          depth = v_depth[as.character(idx_mss)],
+          width = tabulate(v_merge)[idx_mss] / nrow(m_ss),
+          row.names = NULL
+        ),
+
+        ## tipping point state matrix
+        tps = m_tps
       ),
 
-      ## tipping point state matrix
-      tps = m_tps
+      raw = list(
+        ## raw stable states
+        state = m_uss,
+
+        ## ridge information
+        barrier = list_r$barrier,
+
+        ## tipping point state matrix
+        tps = list_r$state,
+
+        ## mapping from raw ss to merged ss
+        map = list_ss$map
+      )
     ),
 
-    raw = list(
-      ## raw stable states
-      state = m_uss,
-
-      ## ridge information
-      barrier = list_r$barrier,
-
-      ## tipping point state matrix
-      tps = list_r$state,
-
-      ## mapping from raw ss to merged ss
-      map = list_ss$map
-    )
+    ## attributes
+    alpha = alpha,
+    beta = beta,
+    seed = seed
   )
 }
 
@@ -581,18 +596,27 @@ basin <- function(
 egap <- function(
     b,
     obs,
-    alpha,
-    beta
+    alpha = NULL,
+    beta = NULL
 ) {
+
+  ## validate input
+  if (is.null(alpha))
+    alpha = attr(b, "alpha")
+
+  if (is.null(beta))
+    beta = attr(b, "beta")
 
   s <- check_dim(obs, alpha, beta)
 
+  ## energy of observed states
   v_e <- apply(
     matrix(obs, ncol = s),
     MARGIN = 1,
     FUN = \(x) energy(x, alpha, beta)
   )
 
+  ## stable states to which observed states belong
   m_oss <- t(
     apply(
       matrix(obs, ncol = s),
@@ -602,24 +626,29 @@ egap <- function(
   )
 
   v_match <- with(b$raw, {
-    match(
+    v_match <- match(
       apply(m_oss[, seq_len(s), drop = FALSE], 1, paste0, collapse = ""),
       apply(state[, seq_len(s), drop = FALSE], 1, paste0, collapse = "")
     )
-  })
 
-  v_match <- with(b$raw, {
     for (i in 1:nrow(map))
       v_match[v_match == map[i, 1]] <- map[i, 2]
 
-    return(v_match)
+    v_match
   })
 
   idx <- sapply(v_match, \(x) which(x == b$pruned$summary$ss))
 
   ## output
-  data.frame(
-    gap = v_e - b$pruned$summary$energy[idx],
-    bottom = b$pruned$summary$energy[idx]
+  return(
+    with(b$pruned$summary, {
+      data.frame(
+        gap = v_e - energy[idx],
+        energy = v_e,
+        ss = v_match,
+        bottom = energy[idx]
+      )
+    })
   )
+
 }
