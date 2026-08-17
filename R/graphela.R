@@ -450,9 +450,6 @@ basin <- function(
     return(
       list(
         pruned = list(
-          ## non-pruned stable states
-          ss = m_uss,
-
           ## pruned stable states
           state = m_uss,
 
@@ -470,7 +467,7 @@ basin <- function(
         ),
 
         raw = list(
-          ss = m_uss,
+          state = m_uss,
           barrier = NULL,
           tps = NULL,
           map = NULL
