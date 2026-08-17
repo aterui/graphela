@@ -575,3 +575,51 @@ basin <- function(
     )
   )
 }
+
+#' @export
+
+egap <- function(
+    b,
+    obs,
+    alpha,
+    beta
+) {
+
+  s <- check_dim(obs, alpha, beta)
+
+  v_e <- apply(
+    matrix(obs, ncol = s),
+    MARGIN = 1,
+    FUN = \(x) energy(x, alpha, beta)
+  )
+
+  m_oss <- t(
+    apply(
+      matrix(obs, ncol = s),
+      MARGIN = 1,
+      FUN = \(x) stpd(x, alpha, beta)
+    )
+  )
+
+  v_match <- with(b$raw, {
+    match(
+      apply(m_oss[, seq_len(s), drop = FALSE], 1, paste0, collapse = ""),
+      apply(state[, seq_len(s), drop = FALSE], 1, paste0, collapse = "")
+    )
+  })
+
+  v_match <- with(b$raw, {
+    for (i in 1:nrow(map))
+      v_match[v_match == map[i, 1]] <- map[i, 2]
+
+    return(v_match)
+  })
+
+  idx <- sapply(v_match, \(x) which(x == b$pruned$summary$ss))
+
+  ## output
+  data.frame(
+    gap = v_e - b$pruned$summary$energy[idx],
+    bottom = b$pruned$summary$energy[idx]
+  )
+}
