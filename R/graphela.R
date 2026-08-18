@@ -647,7 +647,7 @@ egap <- function(
 
   ## energy of observed states
   v_e <- apply(
-    matrix(obs, ncol = s),
+    X = matrix(obs, ncol = s),
     MARGIN = 1,
     FUN = \(x) energy(x, alpha, beta)
   )
@@ -655,7 +655,7 @@ egap <- function(
   ## stable states to which observed states belong
   m_oss <- t(
     apply(
-      matrix(obs, ncol = s),
+      X = matrix(obs, ncol = s),
       MARGIN = 1,
       FUN = \(x) stpd(x, alpha, beta)
     )
@@ -667,8 +667,10 @@ egap <- function(
       apply(state[, seq_len(s), drop = FALSE], 1, paste0, collapse = "")
     )
 
-    for (i in 1:nrow(map))
-      v_match[v_match == map[i, 1]] <- map[i, 2]
+    if (!is.null(map)) {
+      for (i in 1:nrow(map))
+        v_match[v_match == map[i, 1]] <- map[i, 2]
+    }
 
     v_match
   })
