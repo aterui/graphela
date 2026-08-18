@@ -640,19 +640,25 @@ egap <- function(
     seed = NULL
 ) {
 
-  ## validate input
-  alpha = attr(b, "alpha")
-  beta = attr(b, "beta")
+  ## ---- validate input and retrieve model parameters ----
+  ## alpha and beta are stored as attributes of the basin object
+  alpha <- attr(b, "alpha")
+  beta  <- attr(b, "beta")
+
+  ## check dimensions and validity of the observed states
+  ## returns the number of species/states (s)
   s <- check_dim(obs, alpha, beta)
 
-  ## energy of observed states
+  ## ---- calculate energy of each observed state ----
   v_e <- apply(
     X = matrix(obs, ncol = s),
     MARGIN = 1,
     FUN = \(x) energy(x, alpha, beta)
   )
 
-  ## stable states to which observed states belong
+  ## ---- identify stable states associated with observations ----
+  ## each observed state is assigned to the stable state reached
+  ## by steepest descent
   m_oss <- t(
     apply(
       X = matrix(obs, ncol = s),
@@ -661,13 +667,29 @@ egap <- function(
     )
   )
 
-  v_match <- with(b$raw, {
+  ## ---- match observed stable states to original stable states ----
+  idx0 <- with(b$raw, {
+
+    ## match observed stable states to the stable states identified
+    ## in the original basin analysis
     v_match <- match(
-      apply(m_oss[, seq_len(s), drop = FALSE], 1, paste0, collapse = ""),
-      apply(state[, seq_len(s), drop = FALSE], 1, paste0, collapse = "")
+      apply(
+        m_oss[, seq_len(s), drop = FALSE],
+        1,
+        paste0,
+        collapse = ""
+      ),
+      apply(
+        state[, seq_len(s), drop = FALSE],
+        1,
+        paste0,
+        collapse = ""
+      )
     )
 
+    ## update indices if stable states were merged during pruning
     if (!is.null(map)) {
+
       ## skip if no merging occurred in prune()
       for (i in 1:nrow(map))
         v_match[v_match == map[i, 1]] <- map[i, 2]
@@ -676,16 +698,125 @@ egap <- function(
     v_match
   })
 
-  idx <- sapply(v_match, \(x) which(x == b$pruned$summary$ss))
+  ## ---- return if all observed stable states are already known ----
+  if (!any(is.na(idx0))) {
 
-  ## output
-  with(b$pruned$summary, {
-    data.frame(
-      gap = v_e - energy[idx],
-      energy = v_e,
-      ss = v_match,
-      bottom = energy[idx]
+    ## no new stable states were found
+    return(
+      list(
+        gap = with(b$raw, {
+          data.frame(
+            gap = v_e - state[idx0, "energy"],
+            energy = v_e,
+            ss = idx0,
+            bottom = state[idx0, "energy"]
+          )
+        }),
+        state = b$pruned$state,
+        summary = b$pruned$summary
+      )
     )
+  }
+
+  message("New states were found; re-evaluate pruning")
+
+  ## ---- combine original and observed stable states ----
+  ## append observed stable states to the original set and remove
+  ## duplicate states
+  m_uss <- rbind(
+    b$raw$state,
+    m_oss
+  ) |>
+    unique()
+
+  ## assign sequential row names for stable-state indexing
+  rownames(m_uss) <- seq_len(nrow(m_uss))
+
+  ## ---- identify barriers and prune the expanded stable-state set ----
+  ## calculate transition barriers among original and newly observed
+  ## stable states, then remove shallow basins
+  list_ss <- ridge(
+    m = m_uss,
+    alpha = alpha,
+    beta = beta,
+    focus = "barrier",
+    temp = attr(b, "temp"),
+    r = attr(b, "r"),
+    iter = attr(b, "iter"),
+    seed = attr(b, "seed")
+  ) |>
+    prune(th = attr(b, "th"))
+
+  ## ---- identify stable states retained after pruning ----
+  ## collect stable states that participate in at least one retained
+  ## barrier
+  ss_keep <- c(list_ss$barrier[, c("ss1", "ss2")]) |>
+    unique() |>
+    sort()
+
+  ## ---- match observed stable states to expanded stable-state set ----
+  idx1 <- with(list_ss, {
+
+    ## match observed stable states to the combined set of original
+    ## and newly observed stable states
+    v_match <- match(
+      apply(
+        m_oss[, seq_len(s), drop = FALSE],
+        1,
+        paste0,
+        collapse = ""
+      ),
+      apply(
+        m_uss[, seq_len(s), drop = FALSE],
+        1,
+        paste0,
+        collapse = ""
+      )
+    )
+
+    ## update indices if stable states were merged during pruning
+    if (!is.null(map)) {
+
+      ## skip if no merging occurred in prune()
+      for (i in 1:nrow(map))
+        v_match[v_match == map[i, 1]] <- map[i, 2]
+    }
+
+    v_match
   })
 
+  ## ---- identify newly discovered stable states ----
+  ## stable states retained after pruning that were not in the
+  ## original stable-state set
+  ss_new <- setdiff(
+    ss_keep,
+    unique(idx0)
+  )
+
+  ## ---- return energy gaps and updated stable-state summary ----
+  list(
+    ## energy gap between each observation and its associated
+    ## stable state
+    gap = data.frame(
+      gap = v_e - m_uss[idx1, "energy"],
+      energy = v_e,
+      ss = idx1,
+      bottom = m_uss[idx1, "energy"]
+    ),
+
+    ## stable states retained after incorporating observations
+    state = m_uss[ss_keep, ],
+
+    ## append newly discovered stable states to the original summary
+    ## depth and width are not estimated for these new states
+    summary = rbind(
+      b$pruned$summary,
+      data.frame(
+        ss = ss_new,
+        energy = m_uss[ss_new, "energy"],
+        depth = NA,
+        width = NA
+      )
+    )
+  )
 }
