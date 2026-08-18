@@ -668,6 +668,7 @@ egap <- function(
     )
 
     if (!is.null(map)) {
+      ## skip if no merging occurred in prune()
       for (i in 1:nrow(map))
         v_match[v_match == map[i, 1]] <- map[i, 2]
     }
