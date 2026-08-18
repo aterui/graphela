@@ -535,9 +535,9 @@ basin <- function(
   )
 
   ## keep tipping points for basins not pruned
-  ss_keep <- unique(c(list_ss$barrier[, 1:2]))
+  ss_keep <- unique(c(list_ss$barrier[, c("ss1", "ss2")]))
   tp_keep <- apply(
-    X = list_r$state[, c("ss1", "ss2")],
+    X = list_r$state[, c("ss1", "ss2"), drop = FALSE],
     MARGIN = 1,
     \(x) all(x %in% ss_keep)
   )
@@ -547,13 +547,13 @@ basin <- function(
   ## basin depth
   ## each row represents a transition between two stable states:
   ## ss1 -> ss2, with energies e1 and e2 and tipping-point energy tp.
-  m_tpe <- list_ss$barrier[, 1:5, drop = FALSE]
+  m_tpe <- list_ss$barrier[, c("ss1", "ss2", "e1", "e2", "tp"), drop = FALSE]
 
   ## include both directions of each transition so that each stable
   ## state can be evaluated as the starting (shallower) state.
   m_depth <- rbind(
     m_tpe,
-    m_tpe[, c("ss2", "ss1", "e2", "e1", "tp")]
+    m_tpe[, c("ss2", "ss1", "e2", "e1", "tp"), drop = FALSE]
   ) |>
     transform(depth = tp - e1)
 
