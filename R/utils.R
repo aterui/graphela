@@ -156,3 +156,55 @@ check_sa <- function(temp, r, iter) {
 
   invisible(NULL)
 }
+
+
+#' Symmetrize a square matrix
+#'
+#' Converts a square matrix to a symmetric matrix by combining each pair of
+#' off-diagonal elements, X[i, j] and X[j, i], according to the specified
+#' method. For `min` and `max`, the elements are compared by absolute
+#' magnitude while retaining their original signs.
+#'
+#' @noRd
+
+symmetrize <- function(X,
+                       method = c("min", "max", "mean"),
+                       diagonal = TRUE) {
+
+  ## ---- validate input ----
+  method <- match.arg(method)
+
+  if (!is.matrix(X) || nrow(X) != ncol(X)) {
+    stop("X must be a square matrix.")
+  }
+
+  ## ---- extract paired off-diagonal elements ----
+  ## l and u contain the corresponding lower- and upper-triangular
+  ## elements, respectively, allowing each pair to be combined.
+  l <- X[lower.tri(X)]
+  u <- t(X)[lower.tri(X)]
+
+  ## ---- combine paired elements ----
+  ## For min/max, select the value with the smaller/larger absolute
+  ## magnitude while preserving its original sign.
+  y <- switch(
+    method,
+    mean = (l + u) / 2,
+    min  = ifelse(abs(l) <= abs(u), l, u),
+    max  = ifelse(abs(l) >= abs(u), l, u)
+  )
+
+  ## ---- construct symmetric matrix ----
+  ## Fill the lower triangle with the combined values and mirror it
+  ## to the upper triangle.
+  M <- matrix(0, nrow(X), ncol(X))
+  M[lower.tri(M)] <- y
+  M <- M + t(M)
+
+  ## ---- optionally preserve the original diagonal ----
+  if (diagonal) {
+    diag(M) <- diag(X)
+  }
+
+  M
+}
