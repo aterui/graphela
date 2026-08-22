@@ -628,6 +628,66 @@ basin <- function(
   )
 }
 
+
+#' Calculate energy gaps between observations and stable states
+#'
+#' Calculates the energy gap between each observed community state and the
+#' stable state reached by steepest descent. Observed states are first
+#' assigned to stable states identified during the original basin analysis.
+#' If an observation leads to a previously unidentified stable state, the
+#' stable-state set is expanded, transition barriers are recalculated, and
+#' shallow basins are pruned.
+#'
+#' The function returns the energy of each observed state, the energy of its
+#' associated stable state, and the resulting energy gap. It also provides
+#' an updated set of retained stable states and their basin summaries.
+#'
+#' @param b A basin object returned by [basin()]. The model parameters
+#'   `alpha` and `beta`, as well as the basin-analysis settings, are retrieved
+#'   from attributes of this object.
+#' @param obs A numeric matrix or vector of observed community states, with
+#'   rows representing observations and columns representing species.
+#'   States must be compatible with the dimensions of `alpha` and `beta`.
+#' @param temp Optional temperature parameter used when recalculating
+#'   transition barriers for newly discovered stable states. If `NULL`, the
+#'   value stored in `b` is used.
+#' @param r Optional parameter controlling the transition-barrier search.
+#'   If `NULL`, the value stored in `b` is used.
+#' @param iter Optional number of iterations used for transition-barrier
+#'   estimation. If `NULL`, the value stored in `b` is used.
+#' @param th Optional threshold for pruning shallow basins. The value stored
+#'   in `b` is always used when newly discovered stable states require
+#'   re-evaluation.
+#' @param seed Optional random seed used when recalculating transition
+#'   barriers. If `NULL`, the seed stored in `b` is used.
+#'
+#' @return A list with three components:
+#' \describe{
+#'   \item{gap}{A data frame containing the energy gap (`gap`), observed-state
+#'   energy (`energy`), associated stable-state index (`ss`), and stable-state
+#'   energy (`bottom`) for each observation.}
+#'   \item{state}{The stable states retained after incorporating the observed
+#'   states and re-evaluating transition barriers and basin pruning.}
+#'   \item{summary}{A data frame summarizing the retained stable states,
+#'   including their energy, basin depth, and basin width. Newly discovered
+#'   stable states have `NA` for depth and width because these quantities are
+#'   not estimated by `egap()`.}
+#' }
+#'
+#' @details
+#' For each observation, [stpd()] is used to identify the stable state reached
+#' by steepest descent. The energy gap is calculated as the difference between
+#' the observed-state energy and the energy of this associated stable state.
+#'
+#' If all observed states lead to stable states already identified by
+#' [basin()], the original basin results are retained. If new stable states
+#' are discovered, they are added to the original stable-state set, duplicate
+#' states are removed, and transition barriers are recalculated using
+#' [ridge()]. The expanded set is then pruned using [prune()] before the
+#' observed states are reassigned to the resulting stable states.
+#'
+#' @seealso [basin()], [stpd()], [ridge()], [prune()]
+#'
 #' @export
 
 egap <- function(
@@ -740,10 +800,10 @@ egap <- function(
     alpha = alpha,
     beta = beta,
     focus = "barrier",
-    temp = attr(b, "temp"),
-    r = attr(b, "r"),
-    iter = attr(b, "iter"),
-    seed = attr(b, "seed")
+    temp = if(is.null(temp)) attr(b, "temp") else temp,
+    r = if(is.null(r)) attr(b, "r") else r,
+    iter = if(is.null(iter)) attr(b, "iter") else iter,
+    seed = if(is.null(seed)) attr(b, "seed") else seed
   ) |>
     prune(th = attr(b, "th"))
 
