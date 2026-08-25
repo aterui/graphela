@@ -880,3 +880,105 @@ egap <- function(
     )
   )
 }
+
+#' @export
+
+mnet <- function(X,
+                 Y,
+                 family,
+                 type.measure = "deviance",
+                 maxit = 1E+5,
+                 nfolds = nrow(Y),
+                 sym.method = "min",
+                 grouped = FALSE,
+                 parallel = FALSE,
+                 ncore = NULL,
+                 ...) {
+
+  assign("last.warning", NULL, envir = baseenv())
+
+  if (parallel) {
+    core_max <- parallel::detectCores()
+
+    ## parallel setup
+    if(missing(ncore))
+      ncore <- floor(core_max * 0.8)
+
+    if (ncore > parallel::detectCores())
+      stop(paste("Maximum number of cores is", core_max))
+
+    cl <- parallel::makeCluster(ncore)
+    doSNOW::registerDoSNOW(cl)
+    on.exit(parallel::stopCluster(cl))  # ensure cluster stops on exit
+    `%doop%` <- foreach::`%dopar%`
+  } else {
+    `%doop%` <- foreach::`%do%`
+  }
+
+  pb <- txtProgressBar(min = 0,
+                       max = ncol(Y),
+                       style = 3)
+  fun_progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = fun_progress)
+
+  list_m <- foreach::foreach(i = seq_len(ncol(Y)),
+                             .options.snow = opts) %doop% {
+
+                               ## matrix of biotic factors
+                               y <- unlist(Y[, i])
+                               Y_minus_i <- Y[, -i]
+
+                               ## full predictor matrix, combine abiotic and biotic
+                               Z <- model.matrix(~.,
+                                                 data = cbind(X, Y_minus_i))
+
+                               Z <- Z[, -1] # remove intercept column
+
+                               ## define lambda for regularization
+                               m <- glmnet::cv.glmnet(x = Z,
+                                                      y = y,
+                                                      family = family,
+                                                      type.measure = type.measure,
+                                                      maxit = maxit,
+                                                      nfolds = nfolds,
+                                                      grouped = grouped,
+                                                      ...)
+
+                               if(!parallel) {
+                                 # sequential backend
+                                 setTxtProgressBar(pb, i)
+                               } else {
+                                 # parallel backend, use progress options
+                               }
+
+                               return(m)
+                             }
+
+  A0 <- sapply(1:ncol(Y),
+               function(i) {
+                 v_beta <- rep(0, ncol(Y))
+                 beta <- coef(list_m[[i]], "lambda.min")
+                 v_beta[-i] <- beta[rownames(beta) %in% colnames(Y)]
+                 return(v_beta)
+               })
+
+  B <- sapply(1:ncol(Y),
+              function(i) {
+                beta <- coef(list_m[[i]], "lambda.min")
+                beta[!(rownames(beta) %in% colnames(Y))]
+              })
+
+  A <- symmetrize(A0,
+                  method = sym.method,
+                  diagonal = FALSE)
+  rownames(A) <- colnames(A) <- colnames(Y)
+  colnames(B) <- colnames(Y)
+  rownames(B) <- c("(Intercept)", colnames(X))
+
+  cout <- list(A = A,
+               B = B)
+
+  attr(cout, "warnings") <- warnings()
+
+  return(cout)
+}
