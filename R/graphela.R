@@ -700,7 +700,7 @@ egap <- function(
     seed = NULL
 ) {
 
-  ## ---- validate input and retrieve model parameters ----
+  ## validate input and retrieve model parameters
   ## alpha and beta are stored as attributes of the basin object
   alpha <- attr(b, "alpha")
   beta  <- attr(b, "beta")
@@ -709,14 +709,14 @@ egap <- function(
   ## returns the number of species/states (s)
   s <- check_dim(obs, alpha, beta)
 
-  ## ---- calculate energy of each observed state ----
+  ## calculate energy of each observed state
   v_e <- apply(
     X = matrix(obs, ncol = s),
     MARGIN = 1,
     FUN = \(x) energy(x, alpha, beta)
   )
 
-  ## ---- identify stable states associated with observations ----
+  ## identify stable states associated with observations
   ## each observed state is assigned to the stable state reached
   ## by steepest descent
   m_oss <- t(
@@ -727,7 +727,7 @@ egap <- function(
     )
   )
 
-  ## ---- match observed stable states to original stable states ----
+  ## match observed stable states to original stable states
   idx0 <- with(b$raw, {
 
     ## match observed stable states to the stable states identified
@@ -758,7 +758,7 @@ egap <- function(
     v_match
   })
 
-  ## ---- return if all observed stable states are already known ----
+  ## return if all observed stable states are already known
   if (!any(is.na(idx0))) {
 
     ## no new stable states were found
@@ -780,7 +780,7 @@ egap <- function(
 
   message("New states were found; re-evaluate pruning")
 
-  ## ---- combine original and observed stable states ----
+  ## combine original and observed stable states
   ## append observed stable states to the original set and remove
   ## duplicate states
   m_uss <- rbind(
@@ -792,7 +792,7 @@ egap <- function(
   ## assign sequential row names for stable-state indexing
   rownames(m_uss) <- seq_len(nrow(m_uss))
 
-  ## ---- identify barriers and prune the expanded stable-state set ----
+  ## identify barriers and prune the expanded stable-state set
   ## calculate transition barriers among original and newly observed
   ## stable states, then remove shallow basins
   list_ss <- ridge(
@@ -807,14 +807,14 @@ egap <- function(
   ) |>
     prune(th = attr(b, "th"))
 
-  ## ---- identify stable states retained after pruning ----
+  ## identify stable states retained after pruning
   ## collect stable states that participate in at least one retained
   ## barrier
   ss_keep <- c(list_ss$barrier[, c("ss1", "ss2")]) |>
     unique() |>
     sort()
 
-  ## ---- match observed stable states to expanded stable-state set ----
+  ## match observed stable states to expanded stable-state set
   idx1 <- with(list_ss, {
 
     ## match observed stable states to the combined set of original
@@ -845,7 +845,7 @@ egap <- function(
     v_match
   })
 
-  ## ---- identify newly discovered stable states ----
+  ## identify newly discovered stable states
   ## stable states retained after pruning that were not in the
   ## original stable-state set
   ss_new <- setdiff(
@@ -853,7 +853,7 @@ egap <- function(
     unique(idx0)
   )
 
-  ## ---- return energy gaps and updated stable-state summary ----
+  ## return energy gaps and updated stable-state summary
   list(
     ## energy gap between each observation and its associated
     ## stable state

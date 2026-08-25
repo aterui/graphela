@@ -171,20 +171,20 @@ symmetrize <- function(X,
                        method = c("min", "max", "mean"),
                        diagonal = TRUE) {
 
-  ## ---- validate input ----
+  ## validate input
   method <- match.arg(method)
 
   if (!is.matrix(X) || nrow(X) != ncol(X)) {
     stop("X must be a square matrix.")
   }
 
-  ## ---- extract paired off-diagonal elements ----
+  ## extract paired off-diagonal elements
   ## l and u contain the corresponding lower- and upper-triangular
   ## elements, respectively, allowing each pair to be combined.
   l <- X[lower.tri(X)]
   u <- t(X)[lower.tri(X)]
 
-  ## ---- combine paired elements ----
+  ## combine paired elements
   ## For min/max, select the value with the smaller/larger absolute
   ## magnitude while preserving its original sign.
   y <- switch(
@@ -194,14 +194,14 @@ symmetrize <- function(X,
     max  = ifelse(abs(l) >= abs(u), l, u)
   )
 
-  ## ---- construct symmetric matrix ----
+  ## construct symmetric matrix
   ## Fill the lower triangle with the combined values and mirror it
   ## to the upper triangle.
   M <- matrix(0, nrow(X), ncol(X))
   M[lower.tri(M)] <- y
   M <- M + t(M)
 
-  ## ---- optionally preserve the original diagonal ----
+  ## optionally preserve the original diagonal
   if (diagonal) {
     diag(M) <- diag(X)
   }
