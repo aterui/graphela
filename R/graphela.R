@@ -901,31 +901,35 @@ mnet <- function(
   if (nrow(X) != nrow(Y))
     stop("X and Y must have the same number of rows.")
 
+  ## select the lambda criterion used to extract coefficients
   lambda.method <- match.arg(lambda.method)
 
+  ## assign default names to predictors if column names are absent
   if (is.null(colnames(X)))
     colnames(X) <- paste0("x", seq_len(ncol(X)))
 
+  ## assign default names to responses if column names are absent
   if (is.null(colnames(Y)))
     colnames(Y) <- paste0("y", seq_len(ncol(Y)))
 
   ## fit regularized regressions
   fit <- function(i) {
 
-    ## matrix of biotic factors
+    ## response variable and remaining biotic factors
     y <- Y[, i]
     Y_minus_i <- Y[, -i, drop = FALSE]
 
-    ## full predictor matrix, combine abiotic and biotic
+    ## full predictor matrix, combine abiotic and biotic factors
     ## then remove intercept column
     Z <- model.matrix(
       ~.,
       data = data.frame(X, Y_minus_i)
     )[, -1, drop = FALSE]
 
-    ## define lambda for regularization
+    ## collect warning messages generated during model fitting
     warn <- character()
 
+    ## fit cross-validated regularized regression while capturing warnings
     m <-
       withCallingHandlers(
         glmnet::cv.glmnet(
@@ -944,19 +948,21 @@ mnet <- function(
         }
       )
 
+    ## return both the fitted model and any warnings generated
     list(
       model = m,
       warning = warn
     )
   }
 
+  ## fit one regularized regression for each response variable in parallel
   res <- future.apply::future_lapply(
     seq_len(ncol(Y)),
     fit,
     future.seed = future.seed
   )
 
-  ## extract models
+  ## extract fitted models from the results
   list_m <- lapply(res, FUN = `[[`, "model")
 
   ## warnings
@@ -964,12 +970,15 @@ mnet <- function(
     seq_along(res),
     function(i) {
 
+      ## remove duplicate warning messages for each response
       warn <- unique(res[[i]]$warning)
 
+      ## return NULL when the model produced no warnings
       if (!length(warn)) {
         return(NULL)
       }
 
+      ## associate each warning with its response variable
       data.frame(
         i = i,
         response = colnames(Y)[i],
@@ -979,25 +988,27 @@ mnet <- function(
     }
   )
 
+  ## remove responses that produced no warnings
   list_warn <- Filter(Negate(is.null), list_warn)
 
+  ## combine warning records into a single data frame
+  ## and return an empty data frame when no warnings were generated
   if (length(list_warn)) {
     df_warn <- do.call(rbind, list_warn)
     rownames(df_warn) <- NULL
   } else {
-    df_warn <- data.frame(
-      i = integer(),
-      response = character(),
-      warning = character()
-    )
+    df_warn <- NULL
   }
 
   ## abiotic factors
   m_a <- sapply(seq_len(ncol(Y)),
                 function(j) {
+
+                  ## extract coefficients selected by the specified lambda
                   beta <- coef(list_m[[j]], lambda.method)
                   nm <- rownames(beta)
 
+                  ## retain coefficients corresponding to abiotic predictors
                   alpha <- beta[!(nm %in% colnames(Y))]
                   names(alpha) <- nm[!(nm %in% colnames(Y))]
 
@@ -1007,12 +1018,20 @@ mnet <- function(
   ## biotic factors (co-occurrence components)
   m_b <- sapply(seq_len(ncol(Y)),
                 function(j) {
+
+                  ## initialize coefficients for all biotic factors
                   b <- numeric(ncol(Y))
+
+                  ## extract coefficients selected by the specified lambda
                   beta <- coef(list_m[[j]], lambda.method)
+
+                  ## exclude the response itself and retain coefficients
+                  ## corresponding to other biotic factors
                   b[-j] <- beta[rownames(beta) %in% colnames(Y)]
 
                   b
                 }) |>
+    ## enforce symmetry of pairwise biotic effects
     symmetrize(
       method = sym.method,
       diagonal = FALSE
@@ -1031,6 +1050,7 @@ mnet <- function(
     beta = m_b
   )
 
+  ## attach model-fitting warnings as an attribute
   attr(cout, "warning") <- df_warn
 
   ## export
