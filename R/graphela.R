@@ -883,76 +883,156 @@ egap <- function(
 
 #' @export
 
-mnet <- function(X,
-                 Y,
-                 family,
-                 type.measure = "deviance",
-                 maxit = 1E+5,
-                 nfolds = nrow(Y),
-                 sym.method = "min",
-                 grouped = FALSE,
-                 future.seed = TRUE,
-                 ...) {
+mnet <- function(
+    X,
+    Y,
+    family,
+    sym.method = "min",
+    lambda.method = c("lambda.1se", "lambda.min"),
+    type.measure = "deviance",
+    maxit = 1e+05,
+    nfolds = nrow(Y),
+    grouped = FALSE,
+    future.seed = TRUE,
+    ...
+) {
 
+  ## validate input
+  if (nrow(X) != nrow(Y))
+    stop("X and Y must have the same number of rows.")
 
+  lambda.method <- match.arg(lambda.method)
+
+  if (is.null(colnames(X)))
+    colnames(X) <- paste0("x", seq_len(ncol(X)))
+
+  if (is.null(colnames(Y)))
+    colnames(Y) <- paste0("y", seq_len(ncol(Y)))
+
+  ## fit regularized regressions
   fit <- function(i) {
 
     ## matrix of biotic factors
-    y <- Y[, i, drop = TRUE]
+    y <- Y[, i]
     Y_minus_i <- Y[, -i, drop = FALSE]
 
     ## full predictor matrix, combine abiotic and biotic
-    Z <- model.matrix(~.,
-                      data = data.frame(cbind(X, Y_minus_i)))
-
-    Z <- Z[, -1] # remove intercept column
+    ## then remove intercept column
+    Z <- model.matrix(
+      ~.,
+      data = data.frame(X, Y_minus_i)
+    )[, -1, drop = FALSE]
 
     ## define lambda for regularization
-    m <- glmnet::cv.glmnet(
-      x = Z,
-      y = y,
-      family = family,
-      type.measure = type.measure,
-      maxit = maxit,
-      nfolds = nfolds,
-      grouped = grouped,
-      ...
-    )
+    warn <- character()
 
-    m
+    m <-
+      withCallingHandlers(
+        glmnet::cv.glmnet(
+          x = Z,
+          y = y,
+          family = family,
+          type.measure = type.measure,
+          maxit = maxit,
+          nfolds = nfolds,
+          grouped = grouped,
+          ...
+        ),
+        warning = function(w) {
+          warn <<- c(warn, conditionMessage(w))
+          invokeRestart("muffleWarning")
+        }
+      )
+
+    list(
+      model = m,
+      warning = warn
+    )
   }
 
-  list_m <- future.apply::future_lapply(
+  res <- future.apply::future_lapply(
     seq_len(ncol(Y)),
     fit,
     future.seed = future.seed
   )
 
-  # A0 <- sapply(1:ncol(Y),
-  #              function(i) {
-  #                v_beta <- rep(0, ncol(Y))
-  #                beta <- coef(list_m[[i]], "lambda.min")
-  #                v_beta[-i] <- beta[rownames(beta) %in% colnames(Y)]
-  #                return(v_beta)
-  #              })
-  #
-  # B <- sapply(1:ncol(Y),
-  #             function(i) {
-  #               beta <- coef(list_m[[i]], "lambda.min")
-  #               beta[!(rownames(beta) %in% colnames(Y))]
-  #             })
-  #
-  # A <- symmetrize(A0,
-  #                 method = sym.method,
-  #                 diagonal = FALSE)
-  # rownames(A) <- colnames(A) <- colnames(Y)
-  # colnames(B) <- colnames(Y)
-  # rownames(B) <- c("(Intercept)", colnames(X))
-  #
-  # cout <- list(A = A,
-  #              B = B)
-  #
-  # attr(cout, "warnings") <- warnings()
+  ## extract models
+  list_m <- lapply(res, FUN = `[[`, "model")
 
-  list_m
+  ## warnings
+  list_warn <- lapply(
+    seq_along(res),
+    function(i) {
+
+      warn <- unique(res[[i]]$warning)
+
+      if (!length(warn)) {
+        return(NULL)
+      }
+
+      data.frame(
+        i = i,
+        response = colnames(Y)[i],
+        warning = warn,
+        row.names = NULL
+      )
+    }
+  )
+
+  list_warn <- Filter(Negate(is.null), list_warn)
+
+  if (length(list_warn)) {
+    df_warn <- do.call(rbind, list_warn)
+    rownames(df_warn) <- NULL
+  } else {
+    df_warn <- data.frame(
+      i = integer(),
+      response = character(),
+      warning = character()
+    )
+  }
+
+  ## abiotic factors
+  m_a <- sapply(seq_len(ncol(Y)),
+                function(j) {
+                  beta <- coef(list_m[[j]], lambda.method)
+                  nm <- rownames(beta)
+
+                  alpha <- beta[!(nm %in% colnames(Y))]
+                  names(alpha) <- nm[!(nm %in% colnames(Y))]
+
+                  alpha
+                })
+
+  ## biotic factors (co-occurrence components)
+  m_b <- sapply(seq_len(ncol(Y)),
+                function(j) {
+                  b <- numeric(ncol(Y))
+                  beta <- coef(list_m[[j]], lambda.method)
+                  b[-j] <- beta[rownames(beta) %in% colnames(Y)]
+
+                  b
+                }) |>
+    symmetrize(
+      method = sym.method,
+      diagonal = FALSE
+    )
+
+  ## name dimensions
+  colnames(m_a) <- colnames(Y)
+  dimnames(m_b) <- list(
+    colnames(Y),
+    colnames(Y)
+  )
+
+  ## output list
+  cout <- list(
+    alpha = m_a,
+    beta = m_b
+  )
+
+  attr(cout, "warning") <- df_warn
+
+  ## export
+  cout
 }
