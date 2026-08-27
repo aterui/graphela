@@ -881,6 +881,46 @@ egap <- function(
   )
 }
 
+
+#' Fit regularized regressions for a multivariate response
+#'
+#' Fits a cross-validated regularized regression model for each response
+#' variable in \code{Y}, using the predictors in \code{X} and the remaining
+#' response variables as predictors. Coefficients are separated into effects
+#' of the predictors in \code{X} (\code{alpha}) and pairwise effects among
+#' response variables (\code{beta}).
+#'
+#' @param X A matrix or data frame of predictor variables.
+#' @param Y A matrix or data frame of response variables. Must have the same
+#'   number of rows as \code{X}.
+#' @param family A character string specifying the response distribution used
+#'   by \code{glmnet::cv.glmnet()}, such as \code{"gaussian"},
+#'   \code{"binomial"}, or \code{"poisson"}.
+#' @param sym.method A character string specifying the method used to
+#'   symmetrize pairwise coefficients. Passed to \code{symmetrize()}.
+#' @param lambda.method A character string specifying the criterion used to
+#'   select the regularization parameter when extracting coefficients.
+#'   Must be either \code{"lambda.1se"} or \code{"lambda.min"}.
+#' @param type.measure A character string specifying the loss used to evaluate
+#'   models during cross-validation. Passed to
+#'   \code{glmnet::cv.glmnet()}.
+#' @param maxit Maximum number of iterations allowed for model fitting.
+#'   Passed to \code{glmnet::cv.glmnet()}.
+#' @param nfolds Number of folds used for cross-validation. Defaults to the
+#'   number of rows in \code{Y}.
+#' @param grouped Logical; whether to use grouped cross-validation statistics.
+#'   Passed to \code{glmnet::cv.glmnet()}.
+#' @param future.seed Logical; whether to generate reproducible random-number
+#'   streams for parallel computation.
+#' @param ... Additional arguments passed to \code{glmnet::cv.glmnet()}.
+#'
+#' @return A list with two components: \code{alpha}, a matrix of coefficients
+#'   for predictors in \code{X}, and \code{beta}, a symmetric matrix of
+#'   pairwise coefficients among response variables. The diagonal of
+#'   \code{beta} is set to zero. Model-fitting warnings are stored as a
+#'   \code{"warning"} attribute containing a data frame with the response
+#'   index, response name, and warning message.
+#'
 #' @export
 
 mnet <- function(
