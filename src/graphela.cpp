@@ -378,7 +378,7 @@ Rcpp::List ridge_cpp(
 
       for (arma::uword m = 0; m < epath.n_elem - 1; ++m) {
         ed = epath(m + 1) - epath(m);
-        cost += std::max(0.0, std::exp(ed) - 1.0);
+        cost += std::max(0.0, ed);
       }
 
       if (ess0 > ess1) {
