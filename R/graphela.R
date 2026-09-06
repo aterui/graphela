@@ -961,7 +961,7 @@ mnet <- function(
 
     ## full predictor matrix, combine abiotic and biotic factors
     ## then remove intercept column
-    Z <- model.matrix(
+    Z <- stats::model.matrix(
       ~.,
       data = data.frame(X, Y_minus_i)
     )[, -1, drop = FALSE]
@@ -1045,7 +1045,7 @@ mnet <- function(
                 function(j) {
 
                   ## extract coefficients selected by the specified lambda
-                  beta <- coef(list_m[[j]], lambda.method)
+                  beta <- stats::coef(list_m[[j]], lambda.method)
                   nm <- rownames(beta)
 
                   ## retain coefficients corresponding to abiotic predictors
@@ -1063,7 +1063,7 @@ mnet <- function(
                   b <- numeric(ncol(Y))
 
                   ## extract coefficients selected by the specified lambda
-                  beta <- coef(list_m[[j]], lambda.method)
+                  beta <- stats::coef(list_m[[j]], lambda.method)
 
                   ## exclude the response itself and retain coefficients
                   ## corresponding to other biotic factors
