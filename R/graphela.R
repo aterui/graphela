@@ -882,7 +882,7 @@ egap <- function(
 }
 
 
-#' Fit regularized regressions for a multivariate response
+#' Fit regularized regressions for a multivariate response (conditional Markov random fields)
 #'
 #' Fits a cross-validated regularized regression model for each response
 #' variable in \code{Y}, using the predictors in \code{X} and the remaining
@@ -890,9 +890,9 @@ egap <- function(
 #' of the predictors in \code{X} (\code{alpha}) and pairwise effects among
 #' response variables (\code{beta}).
 #'
-#' @param X A matrix or data frame of predictor variables.
 #' @param Y A matrix or data frame of response variables. Must have the same
 #'   number of rows as \code{X}.
+#' @param X A matrix or data frame of predictor variables.
 #' @param family A character string specifying the response distribution used
 #'   by \code{glmnet::cv.glmnet()}, such as \code{"gaussian"},
 #'   \code{"binomial"}, or \code{"poisson"}.
@@ -904,8 +904,6 @@ egap <- function(
 #' @param type.measure A character string specifying the loss used to evaluate
 #'   models during cross-validation. Passed to
 #'   \code{glmnet::cv.glmnet()}.
-#' @param maxit Maximum number of iterations allowed for model fitting.
-#'   Passed to \code{glmnet::cv.glmnet()}.
 #' @param nfolds Number of folds used for cross-validation. Defaults to the
 #'   number of rows in \code{Y}.
 #' @param grouped Logical; whether to use grouped cross-validation statistics.
@@ -923,14 +921,13 @@ egap <- function(
 #'
 #' @export
 
-mnet <- function(
-    X,
+cmrf <- function(
     Y,
+    X = NULL,
     family,
     sym.method = "min",
     lambda.method = c("lambda.1se", "lambda.min"),
     type.measure = "deviance",
-    maxit = 1e+05,
     nfolds = nrow(Y),
     grouped = FALSE,
     future.seed = TRUE,
@@ -938,6 +935,10 @@ mnet <- function(
 ) {
 
   ## validate input
+  if (is.null(X)) {
+    X <- matrix(numeric(0), nrow = nrow(Y), ncol = 0)
+  }
+
   if (nrow(X) != nrow(Y))
     stop("X and Y must have the same number of rows.")
 
@@ -945,7 +946,7 @@ mnet <- function(
   lambda.method <- match.arg(lambda.method)
 
   ## assign default names to predictors if column names are absent
-  if (is.null(colnames(X)))
+  if (ncol(X) > 0 && is.null(colnames(X)))
     colnames(X) <- paste0("x", seq_len(ncol(X)))
 
   ## assign default names to responses if column names are absent
@@ -961,10 +962,20 @@ mnet <- function(
 
     ## full predictor matrix, combine abiotic and biotic factors
     ## then remove intercept column
-    Z <- stats::model.matrix(
-      ~.,
-      data = data.frame(X, Y_minus_i)
-    )[, -1, drop = FALSE]
+    if (ncol(X) > 0) {
+
+      # w/ predictors
+      Z <- stats::model.matrix(
+        ~.,
+        data = data.frame(X, Y_minus_i)
+      )[, -1, drop = FALSE]
+
+    } else {
+
+      # w/o predictors
+      Z <- as.matrix(Y_minus_i)
+
+    }
 
     ## collect warning messages generated during model fitting
     warn <- character()
@@ -977,7 +988,6 @@ mnet <- function(
           y = y,
           family = family,
           type.measure = type.measure,
-          maxit = maxit,
           nfolds = nfolds,
           grouped = grouped,
           ...
@@ -1041,7 +1051,7 @@ mnet <- function(
   }
 
   ## abiotic factors
-  m_a <- sapply(seq_len(ncol(Y)),
+  l_a <- lapply(seq_len(ncol(Y)),
                 function(j) {
 
                   ## extract coefficients selected by the specified lambda
@@ -1055,8 +1065,10 @@ mnet <- function(
                   alpha
                 })
 
+  m_a <- do.call(cbind, l_a)
+
   ## biotic factors (co-occurrence components)
-  m_b <- sapply(seq_len(ncol(Y)),
+  l_b <- lapply(seq_len(ncol(Y)),
                 function(j) {
 
                   ## initialize coefficients for all biotic factors
@@ -1070,8 +1082,10 @@ mnet <- function(
                   b[-j] <- beta[rownames(beta) %in% colnames(Y)]
 
                   b
-                }) |>
-    ## enforce symmetry of pairwise biotic effects
+                })
+
+  ## enforce symmetry of pairwise biotic effects
+  m_b <- do.call(cbind, l_b) |>
     symmetrize(
       method = sym.method,
       diagonal = FALSE
