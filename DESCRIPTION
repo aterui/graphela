@@ -1,21 +1,19 @@
 Package: graphela
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Spatial Energy Landscape Analysis
 Version: 0.1.0
 Authors@R: c(
     person(
       "Akira", "Terui",
-      email = "jane@example.com",
+      email = "hanabi0111@gmail.com",
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
+Description: ELA functions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
 Imports:
     Rcpp,
     withr,
@@ -25,3 +23,4 @@ Imports:
 LinkingTo:
     Rcpp,
     RcppArmadillo
+Config/roxygen2/version: 8.1.0

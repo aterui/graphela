@@ -161,7 +161,7 @@ check_sa <- function(temp, r, iter) {
 #' Symmetrize a square matrix
 #'
 #' Converts a square matrix to a symmetric matrix by combining each pair of
-#' off-diagonal elements, X[i, j] and X[j, i], according to the specified
+#' off-diagonal elements, `X[i, j]` and `X[j, i]`, according to the specified
 #' method. For `min` and `max`, the elements are compared by absolute
 #' magnitude while retaining their original signs.
 #'
