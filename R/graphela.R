@@ -472,7 +472,7 @@ basin <- function(
   rownames(m_ss) <- v_ss
 
   ## retain unique stable states
-  m_uss <- m_ss[!duplicated(v_ss), ]
+  m_uss <- m_ss[!duplicated(v_ss), , drop = FALSE]
 
   if (nrow(m_uss) == 1) {
     ## if only one stable state
