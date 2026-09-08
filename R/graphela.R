@@ -1110,3 +1110,51 @@ cmrf <- function(
   ## export
   cout
 }
+
+
+#' Calculate constant terms from coefficients and new predictor values
+#'
+#' Calculates constant terms for a given set of predictor values
+#' using a single set of estimated model coefficients. Predictor columns in
+#' \code{newdata} are matched to the coefficient names in \code{parm}.
+#' An intercept, if present in \code{parm}, is included automatically.
+#'
+#' @param parm A matrix or vector of estimated model coefficients. Coefficient
+#'   names must be provided as row names when \code{parm} is a matrix. An
+#'   intercept should be named \code{"(Intercept)"}.
+#' @param newdata A data frame containing new values of the predictors.
+#'   Predictor names must match the row names of \code{parm}, excluding
+#'   \code{"(Intercept)"}.
+#'
+#' @return A numeric matrix containing the calculated constant terms for
+#'   each predictor set in \code{newdata}.
+#'
+#' @export
+
+const <- function(
+    parm,
+    newdata
+) {
+
+  ## predictor names in coefficient vector
+  pname <- setdiff(rownames(parm), "(Intercept)")
+
+  ## check that all predictors are available
+  missing <- setdiff(pname, colnames(newdata))
+
+  if (length(missing) > 0) {
+    stop(
+      "Missing predictors in `newdata`: ",
+      paste(missing, collapse = ", ")
+    )
+  }
+
+  ## match newdata columns to coefficient order
+  X <- stats::model.matrix(
+    ~.,
+    data = newdata[, pname, drop = FALSE]
+  )
+
+  ## calculate linear predictor
+  as.matrix(X %*% parm)
+}
