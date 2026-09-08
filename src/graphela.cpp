@@ -451,18 +451,22 @@ Rcpp::List prune_cpp(
   // dmax, dmin: maximum and minimum basin depth
   arma::mat map(barrier.n_rows, 2);
   arma::uword idx_depth = barrier.n_cols - 1;
+  arma::uword idx_dist = barrier.n_cols - 3;
   arma::uword idx_rm;
   arma::uword k = 0;
   double dmax, dmin;
 
   while (true) {
+    // find pairs with dist == 1
+    arma::uvec nei = arma::find(barrier.col(idx_dist) == 1);
+
     // find deepest and shallowest basin
     arma::uword r = find_shallow_cpp(barrier);
     dmax = barrier.col(idx_depth).max();
     dmin = barrier(r, idx_depth);
 
     // stop if the shallowest basin is sufficiently deep
-    if (dmin >= th * dmax)
+    if (nei.is_empty() && dmin > th * dmax)
       break;
 
     // identify basin to be removed
