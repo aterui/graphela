@@ -2,6 +2,7 @@
 
 export(basin)
 export(cmrf)
+export(const)
 export(egap)
 export(energy)
 export(findpath)

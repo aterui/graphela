@@ -14,6 +14,7 @@ cmrf(
   nfolds = nrow(Y),
   grouped = FALSE,
   future.seed = TRUE,
+  progress = TRUE,
   ...
 )
 }
@@ -46,6 +47,8 @@ Passed to \code{glmnet::cv.glmnet()}.}
 
 \item{future.seed}{Logical; whether to generate reproducible random-number
 streams for parallel computation.}
+
+\item{progress}{Logical; whether to show a progress bar.}
 
 \item{...}{Additional arguments passed to \code{glmnet::cv.glmnet()}.}
 }
