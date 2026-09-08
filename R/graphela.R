@@ -273,7 +273,7 @@ ridge <- function(
   ## format output
   ## - barrier matrix
   colnames(res$barrier) <- c(
-    "ss1", "ss2", "e1", "e2", "tp", "cost", "barrier"
+    "ss1", "ss2", "e1", "e2", "tp", "dist", "cost", "barrier"
   )
 
   ## - state matrix
@@ -315,7 +315,7 @@ prune <- function(m, th = 0.2) {
 
   ## expected output format from ridge()
   cnm <- c(
-    "ss1", "ss2", "e1", "e2", "tp", "cost", "barrier"
+    "ss1", "ss2", "e1", "e2", "tp", "dist", "cost", "barrier"
   )
 
   ## validate input
