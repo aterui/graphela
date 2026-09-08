@@ -352,7 +352,7 @@ Rcpp::List ridge_cpp(
   // rs: output matrix for "tipping point" states of all stable state pairs
   // mse: state sequence and energy along the selected path
   arma::mat ss = sse.cols(0, ns - 1);
-  arma::mat barrier(nr, 7);
+  arma::mat barrier(nr, 8);
   arma::mat rs(nr, ns + 3);
   arma::mat mse;
 
@@ -405,8 +405,9 @@ Rcpp::List ridge_cpp(
       barrier(k, 2) = std::max(ess0, ess1); // higher stable-state energy
       barrier(k, 3) = std::min(ess0, ess1); // lower stable-state energy
       barrier(k, 4) = etip; // tipping-point energy
-      barrier(k, 5) = cost; // cumulative energy cost
-      barrier(k, 6) = etip - barrier(k, 2); // energy barrier
+      barrier(k, 5) = arma::accu(ss.row(i) != ss.row(j)); // L1 distance between two states
+      barrier(k, 6) = cost; // cumulative energy cost
+      barrier(k, 7) = etip - barrier(k, 2); // energy barrier
 
       ++k;
     }
