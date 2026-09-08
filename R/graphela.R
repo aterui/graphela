@@ -335,7 +335,8 @@ prune <- function(m, th = 0.2) {
     th = th
   )
 
-  colnames(res$barrier) <- cnm
+  if (!is.null(res$barrier))
+    colnames(res$barrier) <- cnm
 
   res
 }
@@ -474,8 +475,9 @@ basin <- function(
   ## retain unique stable states
   m_uss <- m_ss[!duplicated(v_ss), , drop = FALSE]
 
+  ## if only one stable state
   if (nrow(m_uss) == 1) {
-    ## if only one stable state
+
     return(
       structure(
         ## main output
@@ -533,6 +535,64 @@ basin <- function(
     m = list_r$barrier,
     th = th
   )
+
+  ## if all states but one are pruned
+  if (is.null(list_ss$barrier)) {
+
+    ## merge ss indices
+    v_merge <- v_ss
+
+    if (!is.null(list_ss$map)) {
+
+      for (i in seq_len(nrow(list_ss$map))) {
+        v_merge[v_merge == list_ss$map[i, 1]] <- list_ss$map[i, 2]
+      }
+
+    }
+
+    idx_ss <- unique(v_merge)
+
+    return(
+      structure(
+        ## main output
+        list(
+          pruned = list(
+            ## pruned stable states
+            state = m_uss[idx_ss, , drop = FALSE],
+
+            ## summary of energy, depth, and width for each basin
+            summary = data.frame(
+              ss = idx_ss,
+              energy = m_uss[idx_ss, ncol(m_uss)],
+              depth = NA,
+              width = 1.0,
+              row.names = NULL
+            ),
+
+            ## tipping point state matrix
+            tps = NULL
+          ),
+
+          raw = list(
+            state = m_uss,
+            barrier = NULL,
+            tps = NULL,
+            map = NULL
+          )
+        ),
+
+        ## attributes
+        alpha = alpha,
+        beta = beta,
+        temp = temp,
+        r = r,
+        iter = iter,
+        th = th,
+        seed = seed
+      )
+    )
+
+  }
 
   ## keep tipping points for basins not pruned
   ss_keep <- unique(c(list_ss$barrier[, c("ss1", "ss2")]))
@@ -626,6 +686,7 @@ basin <- function(
     th = th,
     seed = seed
   )
+
 }
 
 
