@@ -137,9 +137,9 @@ arma::rowvec findpath_inline(
 ) {
   // ---- set path ----
   // flip: indices of species that differ between s0 and s1
+  // path: shuffled sequence of species to flip
   // nf: number of flips, or steps from s0 to s1
   // ns: number of species
-  // path: shuffled sequence of species to flip
   arma::uvec flip = arma::find(abs(s0 - s1) == 1);
   arma::uvec path = arma::shuffle(flip);
   const arma::uword nf = flip.n_elem;
