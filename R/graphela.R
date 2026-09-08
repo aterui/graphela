@@ -910,6 +910,7 @@ egap <- function(
 #'   Passed to \code{glmnet::cv.glmnet()}.
 #' @param future.seed Logical; whether to generate reproducible random-number
 #'   streams for parallel computation.
+#' @param progress Logical; whether to show a progress bar.
 #' @param ... Additional arguments passed to \code{glmnet::cv.glmnet()}.
 #'
 #' @return A list with two components: \code{alpha}, a matrix of coefficients
@@ -931,6 +932,7 @@ cmrf <- function(
     nfolds = nrow(Y),
     grouped = FALSE,
     future.seed = TRUE,
+    progress = TRUE,
     ...
 ) {
 
@@ -954,7 +956,7 @@ cmrf <- function(
     colnames(Y) <- paste0("y", seq_len(ncol(Y)))
 
   ## fit regularized regressions
-  fit <- function(i) {
+  fit <- function(i, p = NULL) {
 
     ## response variable and remaining biotic factors
     y <- Y[, i]
@@ -998,6 +1000,9 @@ cmrf <- function(
         }
       )
 
+    if (!is.null(p))
+      p()
+
     ## return both the fitted model and any warnings generated
     list(
       model = m,
@@ -1006,11 +1011,30 @@ cmrf <- function(
   }
 
   ## fit one regularized regression for each response variable in parallel
-  res <- future.apply::future_lapply(
-    seq_len(ncol(Y)),
-    fit,
-    future.seed = future.seed
-  )
+  if (progress) {
+
+    res <- progressr::with_progress({
+
+      p <- progressr::progressor(steps = ncol(Y))
+
+      future.apply::future_lapply(
+        seq_len(ncol(Y)),
+        function(i) {
+          fit(i, p = p)
+        },
+        future.seed = future.seed
+      )
+    })
+
+  } else {
+
+    res <- future.apply::future_lapply(
+      seq_len(ncol(Y)),
+      fit,
+      future.seed = future.seed
+    )
+
+  }
 
   ## extract fitted models from the results
   list_m <- lapply(res, FUN = `[[`, "model")
