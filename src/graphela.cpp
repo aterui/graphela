@@ -157,12 +157,8 @@ arma::rowvec findpath_inline(
   // {vector}
   // idx: indices of the two positions to swap
   // e0: energy vector initialized at s0
-  // omega: barrier energy of the current accepted path
-  // stip: state vector and energy at the highest-energy point
   arma::uvec idx(2);
   arma::vec e0(nf + 1);
-  arma::vec omega(iter);
-  arma::rowvec stip(ns + 1);
 
   // {matrix}
   // ms0: state sequence initialized at s0
@@ -196,71 +192,78 @@ arma::rowvec findpath_inline(
     s(k) = 1 - s(k);
   }
 
+  // mse: state sequence for the current path with energy
+  // stip: state vector and energy at the highest-energy point
+  // omega: barrier energy of the current accepted path
   arma::mat mse = arma::join_rows(ms, e);
-  stip = mse.row(e.index_max());
-  omega(0) = e.max();
+  arma::rowvec stip = mse.row(e.index_max());
+  arma::vec omega(iter, arma::fill::value(e.max()));
 
   // ---- simulated annealing ----
-  for (arma::uword t = 1; t < iter; ++t) {
+  if (nf > 1) {
 
-    // idx: indices for swap
-    u = path;
-    idx = arma::randperm(u.n_elem, 2);
+    for (arma::uword t = 1; t < iter; ++t) {
 
-    // update path sequence by swapping indices
-    u.swap_rows(idx(0), idx(1));
+      // idx: indices for swap
+      u = path;
+      idx = arma::randperm(u.n_elem, 2);
 
-    // reset state and energy
-    s = s0;
-    e = e0;
+      // update path sequence by swapping indices
+      u.swap_rows(idx(0), idx(1));
 
-    // state sequence from s0 to s1
-    for (arma::uword i = 0; i < nf; ++i) {
-      k = u(i);
+      // reset state and energy
+      s = s0;
+      e = e0;
 
-      // update energy
-      de = -(1.0 - 2.0 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
-      e(i + 1) = de + e(i);
-      s(k) = 1 - s(k);
-    }
-
-    // record the maximum energy along the candidate path
-    etop = e.max();
-
-    // calculate acceptance probability
-    pr = std::min(
-      1.0,
-      std::exp((omega(t - 1) - etop) / temp)
-    );
-
-    // update temperature
-    temp *= (1 - r);
-
-    // accept the candidate path if accepted
-    if (arma::randu<double>() < pr) {
-      // update path and barrier
-      path = u;
-      omega(t) = etop;
-
-      // reset matrix
-      ms = ms0;
-
-      // reconstruct state sequence
+      // state sequence from s0 to s1
       for (arma::uword i = 0; i < nf; ++i) {
-        k = path(i);
+        k = u(i);
 
-        // flip one species and update the state
-        ms.row(i + 1) = ms.row(i);
-        ms(i + 1, k) = 1 - ms(i + 1, k);
+        // update energy
+        de = -(1.0 - 2.0 * s(k)) * (alpha(k) + arma::dot(beta.row(k), s));
+        e(i + 1) = de + e(i);
+        s(k) = 1 - s(k);
       }
 
-      mse = arma::join_rows(ms, e);
-      stip = mse.row(e.index_max());
+      // record the maximum energy along the candidate path
+      etop = e.max();
 
-    } else {
-      omega(t) = omega(t - 1);
-    }
-  }
+      // calculate acceptance probability
+      pr = std::min(
+        1.0,
+        std::exp((omega(t - 1) - etop) / temp)
+      );
+
+      // update temperature
+      temp *= (1 - r);
+
+      // accept the candidate path with probability pr
+      if (arma::randu<double>() < pr) {
+        // update path and barrier
+        path = u;
+        omega(t) = etop;
+
+        // reset matrix
+        ms = ms0;
+
+        // reconstruct state sequence
+        for (arma::uword i = 0; i < nf; ++i) {
+          k = path(i);
+
+          // flip one species and update the state
+          ms.row(i + 1) = ms.row(i);
+          ms(i + 1, k) = 1 - ms(i + 1, k);
+        }
+
+        mse = arma::join_rows(ms, e);
+        stip = mse.row(e.index_max());
+
+      } else {
+        omega(t) = omega(t - 1);
+      }
+    }// for loop t
+
+  }// if nf
 
   // output
   if (mse_out != nullptr)
