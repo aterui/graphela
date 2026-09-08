@@ -575,9 +575,9 @@ basin <- function(
 
           raw = list(
             state = m_uss,
-            barrier = NULL,
-            tps = NULL,
-            map = NULL
+            barrier = list_r$barrier,
+            tps = list_r$state,
+            map = list_ss$map
           )
         ),
 
