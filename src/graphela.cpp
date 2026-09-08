@@ -457,6 +457,10 @@ Rcpp::List prune_cpp(
   double dmax, dmin;
 
   while (true) {
+    // stop if no barriers remain
+    if (barrier.n_rows == 0)
+      break;
+
     // find pairs with dist == 1
     arma::uvec nei = arma::find(barrier.col(idx_dist) == 1);
 
@@ -493,6 +497,13 @@ Rcpp::List prune_cpp(
     return Rcpp::List::create(
       Rcpp::Named("barrier") = barrier,
       Rcpp::Named("map") = R_NilValue
+    );
+  }
+
+  if (barrier.n_rows == 0) {
+    return Rcpp::List::create(
+      Rcpp::Named("barrier") = R_NilValue,
+      Rcpp::Named("map") = map
     );
   }
 
