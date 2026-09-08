@@ -459,7 +459,7 @@ basin <- function(
   idx <- order(m_ss[, ncol(m_ss), drop = TRUE])
   m_ss <- m_ss[idx, , drop = FALSE]
 
-  ## assign unique integer IDs to stable states based on energy
+  ## assign unique integer IDs to stable states
   label <- apply(
     m_ss[, seq_len(s), drop = FALSE],
     MARGIN = 1,
@@ -472,7 +472,7 @@ basin <- function(
   rownames(m_ss) <- v_ss
 
   ## retain unique stable states
-  m_uss <- unique(m_ss)
+  m_uss <- m_ss[!duplicated(v_ss), ]
 
   if (nrow(m_uss) == 1) {
     ## if only one stable state
