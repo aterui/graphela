@@ -969,10 +969,12 @@ egap <- function(
 #'   number of rows in \code{Y}.
 #' @param grouped Logical; whether to use grouped cross-validation statistics.
 #'   Passed to \code{glmnet::cv.glmnet()}.
+#' @param control A named list of algorithm control parameters,
+#'   providing per-call overrides of session defaults set by
+#'   [glmnet::glmnet.control()]. See [glmnet::glmnet()] for details.
 #' @param future.seed Logical; whether to generate reproducible random-number
 #'   streams for parallel computation.
 #' @param progress Logical; whether to show a progress bar.
-#' @param ... Additional arguments passed to \code{glmnet::cv.glmnet()}.
 #'
 #' @return A list with two components: \code{alpha}, a matrix of coefficients
 #'   for predictors in \code{X}, and \code{beta}, a symmetric matrix of
@@ -992,9 +994,9 @@ cmrf <- function(
     type.measure = "deviance",
     nfolds = nrow(Y),
     grouped = FALSE,
+    control = list(),
     future.seed = TRUE,
-    progress = TRUE,
-    ...
+    progress = TRUE
 ) {
 
   ## validate input
@@ -1017,7 +1019,7 @@ cmrf <- function(
     colnames(Y) <- paste0("y", seq_len(ncol(Y)))
 
   ## fit regularized regressions
-  fit <- function(i, p = NULL, ...) {
+  fit <- function(i, p = NULL) {
 
     ## response variable and remaining biotic factors
     y <- Y[, i, drop = TRUE]
@@ -1053,7 +1055,7 @@ cmrf <- function(
           type.measure = type.measure,
           nfolds = nfolds,
           grouped = grouped,
-          ...
+          control = control
         ),
         warning = function(w) {
           warn <<- c(warn, conditionMessage(w))
