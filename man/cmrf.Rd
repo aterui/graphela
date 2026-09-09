@@ -13,9 +13,9 @@ cmrf(
   type.measure = "deviance",
   nfolds = nrow(Y),
   grouped = FALSE,
+  control = list(),
   future.seed = TRUE,
-  progress = TRUE,
-  ...
+  progress = TRUE
 )
 }
 \arguments{
@@ -45,12 +45,14 @@ number of rows in \code{Y}.}
 \item{grouped}{Logical; whether to use grouped cross-validation statistics.
 Passed to \code{glmnet::cv.glmnet()}.}
 
+\item{control}{A named list of algorithm control parameters,
+providing per-call overrides of session defaults set by
+\code{\link[glmnet:glmnet.control]{glmnet::glmnet.control()}}. See \code{\link[glmnet:glmnet]{glmnet::glmnet()}} for details.}
+
 \item{future.seed}{Logical; whether to generate reproducible random-number
 streams for parallel computation.}
 
 \item{progress}{Logical; whether to show a progress bar.}
-
-\item{...}{Additional arguments passed to \code{glmnet::cv.glmnet()}.}
 }
 \value{
 A list with two components: \code{alpha}, a matrix of coefficients
