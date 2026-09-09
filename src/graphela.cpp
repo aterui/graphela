@@ -16,8 +16,7 @@ double energy_cpp(
 arma::rowvec stpd_cpp(
     const arma::rowvec& state,
     const arma::rowvec& alpha,
-    const arma::mat& beta,
-    bool print = false
+    const arma::mat& beta
 ) {
   // ---- declare ----
   // {scalar}
@@ -41,8 +40,8 @@ arma::rowvec stpd_cpp(
     eflip = (-(alpha + s * beta) % sign) + e;
     emin = eflip.min();
 
-    if (print)
-      Rcpp::Rcout << e << " -> " << emin << "\n";
+    // if (print)
+    //   Rcpp::Rcout << e << " -> " << emin << "\n";
 
     // stop if no flip decreases energy
     if (emin >= e)
