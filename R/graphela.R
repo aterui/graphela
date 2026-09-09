@@ -1017,7 +1017,7 @@ cmrf <- function(
     colnames(Y) <- paste0("y", seq_len(ncol(Y)))
 
   ## fit regularized regressions
-  fit <- function(i, p = NULL) {
+  fit <- function(i, p = NULL, ...) {
 
     ## response variable and remaining biotic factors
     y <- Y[, i]
