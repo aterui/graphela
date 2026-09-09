@@ -1020,7 +1020,7 @@ cmrf <- function(
   fit <- function(i, p = NULL, ...) {
 
     ## response variable and remaining biotic factors
-    y <- Y[, i]
+    y <- Y[, i, drop = TRUE]
     Y_minus_i <- Y[, -i, drop = FALSE]
 
     ## full predictor matrix, combine abiotic and biotic factors
