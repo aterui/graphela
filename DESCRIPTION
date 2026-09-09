@@ -19,7 +19,8 @@ Imports:
     withr,
     stats,
     future.apply,
-    glmnet
+    glmnet,
+    progressr
 LinkingTo:
     Rcpp,
     RcppArmadillo

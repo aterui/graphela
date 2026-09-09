@@ -5,8 +5,8 @@ energy_cpp <- function(state, alpha, beta) {
     .Call(`_graphela_energy_cpp`, state, alpha, beta)
 }
 
-stpd_cpp <- function(state, alpha, beta, print = FALSE) {
-    .Call(`_graphela_stpd_cpp`, state, alpha, beta, print)
+stpd_cpp <- function(state, alpha, beta) {
+    .Call(`_graphela_stpd_cpp`, state, alpha, beta)
 }
 
 rss_cpp <- function(alpha, beta, n = 10000L, replace = TRUE) {

@@ -25,16 +25,15 @@ BEGIN_RCPP
 END_RCPP
 }
 // stpd_cpp
-arma::rowvec stpd_cpp(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta, bool print);
-RcppExport SEXP _graphela_stpd_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP printSEXP) {
+arma::rowvec stpd_cpp(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta);
+RcppExport SEXP _graphela_stpd_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::rowvec& >::type state(stateSEXP);
     Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< bool >::type print(printSEXP);
-    rcpp_result_gen = Rcpp::wrap(stpd_cpp(state, alpha, beta, print));
+    rcpp_result_gen = Rcpp::wrap(stpd_cpp(state, alpha, beta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -112,7 +111,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_graphela_energy_cpp", (DL_FUNC) &_graphela_energy_cpp, 3},
-    {"_graphela_stpd_cpp", (DL_FUNC) &_graphela_stpd_cpp, 4},
+    {"_graphela_stpd_cpp", (DL_FUNC) &_graphela_stpd_cpp, 3},
     {"_graphela_rss_cpp", (DL_FUNC) &_graphela_rss_cpp, 4},
     {"_graphela_findpath_cpp", (DL_FUNC) &_graphela_findpath_cpp, 7},
     {"_graphela_ridge_cpp", (DL_FUNC) &_graphela_ridge_cpp, 7},
