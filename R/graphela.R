@@ -484,7 +484,7 @@ basin <- function(
         list(
           pruned = list(
             ## pruned stable states
-            state = m_uss,
+            ss = m_uss,
 
             ## summary of energy, depth, and width for each basin
             summary = data.frame(
@@ -500,7 +500,7 @@ basin <- function(
           ),
 
           raw = list(
-            state = m_uss,
+            ss = m_uss,
             barrier = NULL,
             tps = NULL,
             map = NULL
@@ -508,6 +508,7 @@ basin <- function(
         ),
 
         ## attributes
+        class = "basin",
         alpha = alpha,
         beta = beta,
         temp = temp,
@@ -552,13 +553,15 @@ basin <- function(
 
     idx_ss <- unique(v_merge)
 
+    warning("All stable states but one are pruned. Likely the landscape is flat.")
+
     return(
       structure(
         ## main output
         list(
           pruned = list(
             ## pruned stable states
-            state = m_uss[idx_ss, , drop = FALSE],
+            ss = m_uss[idx_ss, , drop = FALSE],
 
             ## summary of energy, depth, and width for each basin
             summary = data.frame(
@@ -574,7 +577,7 @@ basin <- function(
           ),
 
           raw = list(
-            state = m_uss,
+            ss = m_uss,
             barrier = list_r$barrier,
             tps = list_r$state,
             map = list_ss$map
@@ -582,6 +585,7 @@ basin <- function(
         ),
 
         ## attributes
+        class = "basin",
         alpha = alpha,
         beta = beta,
         temp = temp,
@@ -647,7 +651,7 @@ basin <- function(
     list(
       pruned = list(
         ## pruned stable states
-        state = m_mss,
+        ss = m_mss,
 
         ## summary of energy, depth, and width for each basin
         summary = data.frame(
@@ -664,7 +668,7 @@ basin <- function(
 
       raw = list(
         ## raw stable states
-        state = m_uss,
+        ss = m_uss,
 
         ## ridge information
         barrier = list_r$barrier,
@@ -678,6 +682,7 @@ basin <- function(
     ),
 
     ## attributes
+    class = "basin",
     alpha = alpha,
     beta = beta,
     temp = temp,
