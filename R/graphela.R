@@ -354,9 +354,6 @@ prune <- function(m, th = 0.2) {
 #'   contribution of each species to system energy.
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
-#' @param cnm An optional character vector of names for the species-state
-#'   variables. If `NULL`, variables are named sequentially from `1` to
-#'   the number of species.
 #' @param n An integer specifying the number of initial states sampled by
 #'   `rss()` to identify stable states. Defaults to `10000`.
 #' @param replace A logical value indicating whether initial states are
@@ -428,7 +425,6 @@ prune <- function(m, th = 0.2) {
 basin <- function(
     alpha,
     beta,
-    cnm = NULL,
     n = 10000,
     replace = TRUE,
     temp = 10,
@@ -449,16 +445,17 @@ basin <- function(
 
   s <- length(alpha)
 
-  if (is.null(cnm))
-    state_names <- as.character(seq_len(s))
-  else
-    state_names <- cnm
+  ## state names
+  nms <- list(names(alpha), rownames(beta), colnames(beta))
 
-  colnames(m_ss) <- c(state_names, "energy")
+  if (all(vapply(nms, identical, logical(1), nms[[1]])))
+    snm <- abbreviate(names(alpha))
+  else
+    snm <- NULL
 
   ## sort stable states by energy
-  idx <- order(m_ss[, ncol(m_ss), drop = TRUE])
-  m_ss <- m_ss[idx, , drop = FALSE]
+  io <- order(m_ss[, ncol(m_ss), drop = TRUE])
+  m_ss <- m_ss[io, , drop = FALSE]
 
   ## assign unique integer IDs to stable states
   label <- apply(
@@ -475,6 +472,10 @@ basin <- function(
   ## retain unique stable states
   m_uss <- m_ss[!duplicated(v_ss), , drop = FALSE]
 
+  ## state named matrix
+  m_vss <- m_uss[, -ncol(m_uss)]
+  colnames(m_vss) <- snm
+
   ## if only one stable state
   if (nrow(m_uss) == 1) {
 
@@ -482,11 +483,11 @@ basin <- function(
       structure(
         ## main output
         list(
+          ## ss: pruned stable states
+          ## summary: summary of energy, depth, and width for each basin
+          ## tps: tipping point state matrix
           pruned = list(
-            ## pruned stable states
-            ss = m_uss,
-
-            ## summary of energy, depth, and width for each basin
+            ss = m_vss,
             summary = data.frame(
               ss = 1,
               energy = m_uss[, ncol(m_uss)],
@@ -494,13 +495,15 @@ basin <- function(
               width = 1.0,
               row.names = NULL
             ),
-
-            ## tipping point state matrix
             tps = NULL
           ),
 
+          ## ss: raw stable states
+          ## barrier: ridge information
+          ## tps: tipping point state matrix
+          ## map: mapping from raw ss to merged ss
           raw = list(
-            ss = m_uss,
+            ss = m_vss,
             barrier = NULL,
             tps = NULL,
             map = NULL
@@ -551,7 +554,7 @@ basin <- function(
 
     }
 
-    idx_ss <- unique(v_merge)
+    idx_mss <- unique(v_merge)
 
     warning("All stable states but one are pruned. Likely the landscape is flat.")
 
@@ -559,25 +562,27 @@ basin <- function(
       structure(
         ## main output
         list(
+          ## ss: pruned stable states
+          ## summary: summary of energy, depth, and width for each basin
+          ## tps: tipping point state matrix
           pruned = list(
-            ## pruned stable states
-            ss = m_uss[idx_ss, , drop = FALSE],
-
-            ## summary of energy, depth, and width for each basin
+            ss = m_vss[idx_mss, , drop = FALSE],
             summary = data.frame(
-              ss = idx_ss,
-              energy = m_uss[idx_ss, ncol(m_uss)],
+              ss = idx_mss,
+              energy = m_uss[idx_mss, ncol(m_uss), drop = TRUE],
               depth = NA,
               width = 1.0,
               row.names = NULL
             ),
-
-            ## tipping point state matrix
             tps = NULL
           ),
 
+          ## ss: raw stable states
+          ## barrier: ridge information
+          ## tps: tipping point state matrix
+          ## map: mapping from raw ss to merged ss
           raw = list(
-            ss = m_uss,
+            ss = m_vss,
             barrier = list_r$barrier,
             tps = list_r$state,
             map = list_ss$map
@@ -644,39 +649,33 @@ basin <- function(
 
   ## IDs of the final merged basins
   idx_mss <- unique(v_merge)
-  m_mss <- m_uss[idx_mss, , drop = FALSE]
 
   structure(
     ## main output
     list(
+      ## ss: pruned stable states
+      ## summary: summary of energy, depth, and width for each basin
+      ## tps: tipping point state matrix
       pruned = list(
-        ## pruned stable states
-        ss = m_mss,
-
-        ## summary of energy, depth, and width for each basin
+        ss = m_vss[idx_mss, , drop = FALSE],
         summary = data.frame(
           ss = idx_mss,
-          energy = m_mss[, ncol(m_mss)],
+          energy = m_uss[idx_mss, ncol(m_uss), drop = TRUE],
           depth = v_depth[as.character(idx_mss)],
           width = tabulate(v_merge)[idx_mss] / nrow(m_ss),
           row.names = NULL
         ),
-
-        ## tipping point state matrix
         tps = m_tps
       ),
 
+      ## ss: raw stable states
+      ## barrier: ridge information
+      ## tps: tipping point state matrix
+      ## map: mapping from raw ss to merged ss
       raw = list(
-        ## raw stable states
-        ss = m_uss,
-
-        ## ridge information
+        ss = m_vss,
         barrier = list_r$barrier,
-
-        ## tipping point state matrix
         tps = list_r$state,
-
-        ## mapping from raw ss to merged ss
         map = list_ss$map
       )
     ),
