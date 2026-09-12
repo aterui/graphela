@@ -473,7 +473,7 @@ basin <- function(
   m_uss <- m_ss[!duplicated(v_ss), , drop = FALSE]
 
   ## state named matrix
-  m_vss <- m_uss[, -ncol(m_uss)]
+  m_vss <- m_uss[, -ncol(m_uss), drop = FALSE]
   colnames(m_vss) <- snm
 
   ## if only one stable state
