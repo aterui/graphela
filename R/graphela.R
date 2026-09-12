@@ -355,19 +355,19 @@ prune <- function(m, th = 0.2) {
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
 #' @param n An integer specifying the number of initial states sampled by
-#'   `rss()` to identify stable states. Defaults to `10000`.
+#'   [rss()] to identify stable states. Defaults to `10000`.
 #' @param replace A logical value indicating whether initial states are
-#'   sampled with replacement by `rss()`. Defaults to `TRUE`.
+#'   sampled with replacement by [rss()]. Defaults to `TRUE`.
 #' @param temp A numeric value specifying the initial temperature used for
 #'   simulated annealing in the ridge search. Defaults to `10`.
 #' @param r A numeric value specifying the cooling rate used for simulated
 #'   annealing in the ridge search. Defaults to `0.001`.
 #' @param iter An integer specifying the maximum number of iterations used
 #'   for each ridge search. Defaults to `10000`.
-#' @param th A numeric threshold used by `prune()` to remove shallow
+#' @param th A numeric threshold used by [prune()] to remove shallow
 #'   transitions and merge the corresponding stable states. Defaults to `0.2`.
 #' @param seed An optional integer used to control random-number generation
-#'   in `rss()` and `ridge()`. If `NULL`, the current random-number state is
+#'   in [rss()] and [ridge()]. If `NULL`, the current random-number state is
 #'   used.
 #'
 #' @useDynLib graphela, .registration = TRUE
@@ -377,8 +377,8 @@ prune <- function(m, th = 0.2) {
 #'   \describe{
 #'     \item{pruned}{Results after pruning shallow basins. Contains:
 #'       \describe{
-#'         \item{state}{A matrix containing the species-state configuration
-#'           and energy of each final basin.}
+#'         \item{state}{A matrix containing the unique stable-state
+#'           configurations identified by [rss()].}
 #'         \item{summary}{A data frame summarizing each final basin, including
 #'           its stable-state ID (`ss`), energy, basin depth, and basin width.}
 #'         \item{tps}{A matrix containing the tipping-point states associated
@@ -388,11 +388,11 @@ prune <- function(m, th = 0.2) {
 #'     \item{raw}{Results before pruning. Contains:
 #'       \describe{
 #'         \item{state}{A matrix containing the unique stable-state
-#'           configurations and their energies identified by `rss()`.}
+#'           configurations identified by [rss()].}
 #'         \item{barrier}{A data frame containing the transition barriers
-#'           identified by `ridge()`.}
+#'           identified by [ridge()].}
 #'         \item{tps}{A matrix containing the tipping-point states identified
-#'           by `ridge()`.}
+#'           by [ridge()].}
 #'         \item{map}{A matrix describing the mapping of stable-state IDs
 #'           before pruning to IDs after merging. `NULL` if no merging occurs.}
 #'       }
@@ -400,14 +400,14 @@ prune <- function(m, th = 0.2) {
 #'   }
 #'
 #' @details
-#' Stable states are first identified using `rss()` and sorted by energy.
+#' Stable states are first identified using [rss()] and sorted by energy.
 #' Duplicate stable-state configurations are then removed. If only one unique
 #' stable state is identified, that state is returned directly without ridge
 #' searching or pruning.
 #'
-#' When multiple stable states are present, `ridge()` is used to identify
+#' When multiple stable states are present, [ridge()] is used to identify
 #' transition barriers and tipping-point states among all unique stable states.
-#' Shallow basins are subsequently pruned using `prune()`. Tipping points are
+#' Shallow basins are subsequently pruned using [prune()]. Tipping points are
 #' retained only for transitions involving stable states that remain after
 #' pruning.
 #'
@@ -415,7 +415,7 @@ prune <- function(m, th = 0.2) {
 #' originating from each stable state.
 #'
 #' Basin width is calculated as the proportion of the initial stable-state
-#' assignments from `rss()` that belong to each final basin. Stable states
+#' assignments from [rss()] that belong to each final basin. Stable states
 #' merged during pruning are therefore combined when calculating basin width.
 #'
 #' The returned object also stores `alpha`, `beta`, and `seed` as attributes.
