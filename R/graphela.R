@@ -276,6 +276,9 @@ ridge <- function(
     "ss1", "ss2", "e1", "e2", "tp", "dist", "cost", "barrier"
   )
 
+  ## - state matrix
+  colnames(res$state) <- c(rep("", s), "energy", "ss1", "ss2")
+
   ## return
   if (focus == "all") {
     res
