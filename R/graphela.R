@@ -231,7 +231,7 @@ findpath <- function(
 #'     \item{barrier}{Energy barrier separating the two stable states.}
 #'   }
 #'   If `focus = "state"`, a matrix containing the tipping-point state
-#'   vectors, their energies, and the corresponding stable-state indices.
+#'   vectors, their energies, and the corresponding pair of stable state indices.
 #'   If `focus = "all"`, a list containing both `"barrier"` and `"state"`
 #'   matrices.
 #'
@@ -275,14 +275,6 @@ ridge <- function(
   colnames(res$barrier) <- c(
     "ss1", "ss2", "e1", "e2", "tp", "dist", "cost", "barrier"
   )
-
-  ## - state matrix
-  state_names <- colnames(m)[seq_len(s)]
-
-  if (is.null(state_names))
-    state_names <- as.character(seq_len(s))
-
-  colnames(res$state) <- c(state_names, "energy", "ss1", "ss2")
 
   ## return
   if (focus == "all")
