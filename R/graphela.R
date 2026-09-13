@@ -444,10 +444,12 @@ basin <- function(
   ## state names
   nms <- list(names(alpha), rownames(beta), colnames(beta))
 
-  if (all(vapply(nms, identical, logical(1), nms[[1]])))
+  if (!is.null(nms[[1]]) &&
+      all(vapply(nms, identical, logical(1), nms[[1]]))) {
     snm <- abbreviate(names(alpha))
-  else
+  } else {
     snm <- rep("", s)
+  }
 
   ## sort stable states by energy
   io <- order(m_ss[, ncol(m_ss), drop = TRUE])
@@ -483,7 +485,6 @@ basin <- function(
           ## summary: summary of energy, depth, and width for each basin
           ## tps: tipping point state matrix
           pruned = list(
-            ss = m_vss,
             summary = data.frame(
               ss = 1,
               energy = m_uss[, ncol(m_uss), drop = TRUE],
@@ -491,6 +492,8 @@ basin <- function(
               width = 1.0,
               row.names = NULL
             ),
+            ss = m_vss,
+            barrier = NULL,
             tps = NULL
           ),
 
@@ -566,7 +569,6 @@ basin <- function(
           ## summary: summary of energy, depth, and width for each basin
           ## tps: tipping point state matrix
           pruned = list(
-            ss = m_vss[idx_mss, , drop = FALSE],
             summary = data.frame(
               ss = idx_mss,
               energy = m_uss[idx_mss, ncol(m_uss), drop = TRUE],
@@ -574,6 +576,8 @@ basin <- function(
               width = 1.0,
               row.names = NULL
             ),
+            ss = m_vss[idx_mss, , drop = FALSE],
+            barrier = list_ss$barrier,
             tps = NULL
           ),
 
@@ -657,7 +661,6 @@ basin <- function(
       ## summary: summary of energy, depth, and width for each basin
       ## tps: tipping point state matrix
       pruned = list(
-        ss = m_vss[idx_mss, , drop = FALSE],
         summary = data.frame(
           ss = idx_mss,
           energy = m_uss[idx_mss, ncol(m_uss), drop = TRUE],
@@ -665,6 +668,8 @@ basin <- function(
           width = tabulate(v_merge)[idx_mss] / nrow(m_ss),
           row.names = NULL
         ),
+        ss = m_vss[idx_mss, , drop = FALSE],
+        barrier = list_ss$barrier,
         tps = m_tps
       ),
 
