@@ -490,7 +490,7 @@ basin <- function(
             ss = m_vss,
             summary = data.frame(
               ss = 1,
-              energy = m_uss[, ncol(m_uss)],
+              energy = m_uss[, ncol(m_uss), drop = TRUE],
               depth = NA,
               width = 1.0,
               row.names = NULL
