@@ -277,10 +277,11 @@ ridge <- function(
   )
 
   ## return
-  if (focus == "all")
+  if (focus == "all") {
     res
-  else
+  } else {
     res[[focus]]
+  }
 
 }
 
