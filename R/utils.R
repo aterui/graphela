@@ -25,6 +25,9 @@ check_dim <- function(
     beta
 ) {
 
+  if (all(alpha == 0) && all(beta == 0))
+    stop("`alpha` and `beta` contain zeros only. No meaningful inference is possible.")
+
   if (!is.numeric(alpha) || is.null(alpha))
     stop("`alpha` must be a numeric vector.")
 
