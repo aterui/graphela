@@ -848,7 +848,7 @@ egap <- function(
     )
   }
 
-  message("New states were found; re-evaluate pruning")
+  message("New stable states were found; re-evaluate pruning")
 
   ## combine original and observed stable states
   ## append observed stable states to the original set and remove
