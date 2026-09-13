@@ -517,7 +517,7 @@ basin <- function(
   }
 
   ## ridge and pruning
-  list_r <- ridge(
+  list_ridge <- ridge(
     m = m_uss,
     alpha = alpha,
     beta = beta,
@@ -529,7 +529,7 @@ basin <- function(
   )
 
   list_ss <- prune(
-    m = list_r$barrier,
+    m = list_ridge$barrier,
     th = th
   )
 
@@ -576,8 +576,8 @@ basin <- function(
           ## map: mapping from raw ss to merged ss
           raw = list(
             ss = m_vss,
-            barrier = list_r$barrier,
-            tps = list_r$state,
+            barrier = list_ridge$barrier,
+            tps = list_ridge$state,
             map = list_ss$map
           )
         ),
@@ -599,12 +599,12 @@ basin <- function(
   ## keep tipping points for basins not pruned
   ss_keep <- unique(c(list_ss$barrier[, c("ss1", "ss2")]))
   tp_keep <- apply(
-    X = list_r$state[, c("ss1", "ss2"), drop = FALSE],
+    X = list_ridge$state[, c("ss1", "ss2"), drop = FALSE],
     MARGIN = 1,
     \(x) all(x %in% ss_keep)
   )
 
-  m_tps <- list_r$state[tp_keep, , drop = FALSE]
+  m_tps <- list_ridge$state[tp_keep, , drop = FALSE]
 
   ## basin depth
   ## each row represents a transition between two stable states:
@@ -667,8 +667,8 @@ basin <- function(
       ## map: mapping from raw ss to merged ss
       raw = list(
         ss = m_vss,
-        barrier = list_r$barrier,
-        tps = list_r$state,
+        barrier = list_ridge$barrier,
+        tps = list_ridge$state,
         map = list_ss$map
       )
     ),
