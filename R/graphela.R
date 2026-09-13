@@ -447,7 +447,7 @@ basin <- function(
   if (all(vapply(nms, identical, logical(1), nms[[1]])))
     snm <- abbreviate(names(alpha))
   else
-    snm <- NULL
+    snm <- rep("", s)
 
   ## sort stable states by energy
   io <- order(m_ss[, ncol(m_ss), drop = TRUE])
@@ -520,6 +520,8 @@ basin <- function(
   }
 
   ## ridge and pruning
+  ## - list_ridge: before pruning
+  ## - list_ss: after pruning
   list_ridge <- ridge(
     m = m_uss,
     alpha = alpha,
@@ -535,6 +537,8 @@ basin <- function(
     m = list_ridge$barrier,
     th = th
   )
+
+  colnames(list_ridge$state)[seq_len(s)] <- snm
 
   ## if all states but one are pruned
   if (is.null(list_ss$barrier)) {
