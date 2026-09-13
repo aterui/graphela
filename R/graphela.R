@@ -810,7 +810,7 @@ egap <- function(
         collapse = ""
       ),
       apply(
-        state[, seq_len(s), drop = FALSE],
+        ss[, seq_len(s), drop = FALSE],
         1,
         paste0,
         collapse = ""
@@ -836,13 +836,13 @@ egap <- function(
       list(
         gap = with(b$raw, {
           data.frame(
-            gap = v_e - state[idx0, "energy"],
+            gap = v_e - ss[idx0, "energy"],
             energy = v_e,
             ss = idx0,
-            bottom = state[idx0, "energy"]
+            bottom = ss[idx0, "energy"]
           )
         }),
-        state = b$pruned$state,
+        ss = b$pruned$ss,
         summary = b$pruned$summary
       )
     )
@@ -854,7 +854,7 @@ egap <- function(
   ## append observed stable states to the original set and remove
   ## duplicate states
   m_uss <- rbind(
-    b$raw$state,
+    b$raw$ss,
     m_oss
   ) |>
     unique()
@@ -935,7 +935,7 @@ egap <- function(
     ),
 
     ## stable states retained after incorporating observations
-    state = m_uss[ss_keep, ],
+    ss = m_uss[ss_keep, ],
 
     ## append newly discovered stable states to the original summary
     ## depth and width are not estimated for these new states
