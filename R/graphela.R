@@ -471,8 +471,7 @@ basin <- function(
   m_uss <- m_ss[!duplicated(v_ss), , drop = FALSE]
 
   ## state named matrix
-  m_vss <- m_uss[, -ncol(m_uss), drop = FALSE]
-  colnames(m_vss) <- snm
+  colnames(m_uss) <- c(snm, "energy")
 
   ## if only one stable state
   if (nrow(m_uss) == 1) {
@@ -492,7 +491,7 @@ basin <- function(
               width = 1.0,
               row.names = NULL
             ),
-            ss = m_vss,
+            ss = m_uss,
             barrier = NULL,
             tps = NULL
           ),
@@ -502,7 +501,7 @@ basin <- function(
           ## tps: tipping point state matrix
           ## map: mapping from raw ss to merged ss
           raw = list(
-            ss = m_vss,
+            ss = m_uss,
             barrier = NULL,
             tps = NULL,
             map = NULL
@@ -576,7 +575,7 @@ basin <- function(
               width = 1.0,
               row.names = NULL
             ),
-            ss = m_vss[idx_mss, , drop = FALSE],
+            ss = m_uss[idx_mss, , drop = FALSE],
             barrier = list_ss$barrier,
             tps = NULL
           ),
@@ -586,7 +585,7 @@ basin <- function(
           ## tps: tipping point state matrix
           ## map: mapping from raw ss to merged ss
           raw = list(
-            ss = m_vss,
+            ss = m_uss,
             barrier = list_ridge$barrier,
             tps = list_ridge$state,
             map = list_ss$map
@@ -668,7 +667,7 @@ basin <- function(
           width = tabulate(v_merge)[idx_mss] / nrow(m_ss),
           row.names = NULL
         ),
-        ss = m_vss[idx_mss, , drop = FALSE],
+        ss = m_uss[idx_mss, , drop = FALSE],
         barrier = list_ss$barrier,
         tps = m_tps
       ),
@@ -678,7 +677,7 @@ basin <- function(
       ## tps: tipping point state matrix
       ## map: mapping from raw ss to merged ss
       raw = list(
-        ss = m_vss,
+        ss = m_uss,
         barrier = list_ridge$barrier,
         tps = list_ridge$state,
         map = list_ss$map
