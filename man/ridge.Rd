@@ -56,7 +56,7 @@ of stable states and seven columns:
 \item{barrier}{Energy barrier separating the two stable states.}
 }
 If \code{focus = "state"}, a matrix containing the tipping-point state
-vectors, their energies, and the corresponding stable-state indices.
+vectors, their energies, and the corresponding pair of stable state indices.
 If \code{focus = "all"}, a list containing both \code{"barrier"} and \code{"state"}
 matrices.
 }
