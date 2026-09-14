@@ -211,3 +211,13 @@ symmetrize <- function(X,
 
   M
 }
+
+#' Copy attributes
+#'
+#' @noRd
+
+copy_attrs <- function(x, from, attrs) {
+  for (a in attrs)
+    attr(x, a) <- attr(from, a)
+  x
+}
