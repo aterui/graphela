@@ -451,7 +451,7 @@ arma::uword find_shallow_cpp(
 
 // [[Rcpp::export]]
 Rcpp::List prune_cpp(
-    arma::mat& barrier,
+    arma::mat barrier,
     const double th = 0.2
 ) {
   // ---- declare ----
