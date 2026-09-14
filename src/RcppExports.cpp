@@ -69,7 +69,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // ridge_cpp
-Rcpp::List ridge_cpp(const arma::mat& sse, const arma::rowvec& alpha, const arma::mat& beta, double temp, const double r, const arma::uword iter, Rcpp::Nullable<arma::uvec> index);
+Rcpp::List ridge_cpp(const arma::mat& sse, const arma::rowvec& alpha, const arma::mat& beta, const double temp, const double r, const arma::uword iter, Rcpp::Nullable<arma::uvec> index);
 RcppExport SEXP _graphela_ridge_cpp(SEXP sseSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP iterSEXP, SEXP indexSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -77,7 +77,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type sse(sseSEXP);
     Rcpp::traits::input_parameter< const arma::rowvec& >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type beta(betaSEXP);
-    Rcpp::traits::input_parameter< double >::type temp(tempSEXP);
+    Rcpp::traits::input_parameter< const double >::type temp(tempSEXP);
     Rcpp::traits::input_parameter< const double >::type r(rSEXP);
     Rcpp::traits::input_parameter< const arma::uword >::type iter(iterSEXP);
     Rcpp::traits::input_parameter< Rcpp::Nullable<arma::uvec> >::type index(indexSEXP);
@@ -97,12 +97,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // prune_cpp
-Rcpp::List prune_cpp(arma::mat& barrier, const double th);
+Rcpp::List prune_cpp(arma::mat barrier, const double th);
 RcppExport SEXP _graphela_prune_cpp(SEXP barrierSEXP, SEXP thSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type barrier(barrierSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type barrier(barrierSEXP);
     Rcpp::traits::input_parameter< const double >::type th(thSEXP);
     rcpp_result_gen = Rcpp::wrap(prune_cpp(barrier, th));
     return rcpp_result_gen;
