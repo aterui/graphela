@@ -878,20 +878,25 @@ egap <- function(
   if (!any(is.na(idx0))) {
 
     ## no new stable states were found
-    return(
-      list(
-        gap = with(b$raw, {
-          data.frame(
-            gap = v_e - ss[idx0, "energy"],
-            energy = v_e,
-            ss = idx0,
-            bottom = ss[idx0, "energy"]
-          )
-        }),
-        ss = b$pruned$ss,
-        summary = b$pruned$summary
-      )
+    res <- list(
+      gap = with(b$raw, {
+        data.frame(
+          gap = v_e - ss[idx0, "energy"],
+          energy = v_e,
+          ss = idx0,
+          bottom = ss[idx0, "energy"]
+        )
+      }),
+      ss = b$pruned$ss,
+      summary = b$pruned$summary
     )
+
+    ## copy attributes
+    attributes(res) <- attributes(b)
+    attr(res, "class") <- "egap"
+    attr(res, "obs") <- obs
+
+    return(res)
   }
 
   message("New stable states were found; re-evaluate pruning")
@@ -970,7 +975,7 @@ egap <- function(
   )
 
   ## return energy gaps and updated stable-state summary
-  list(
+  res <- list(
     ## energy gap between each observation and its associated
     ## stable state
     gap = data.frame(
@@ -995,6 +1000,13 @@ egap <- function(
       )
     )
   )
+
+  ## copy attributes
+  attributes(res) <- attributes(b)
+  attr(res, "class") <- "egap"
+  attr(res, "obs") <- obs
+
+  res
 }
 
 
