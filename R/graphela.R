@@ -373,17 +373,19 @@ prune <- function(m, th = 0.2) {
 #'   \describe{
 #'     \item{pruned}{Results after pruning shallow basins. Contains:
 #'       \describe{
-#'         \item{state}{A matrix containing the unique stable-state
-#'           configurations identified by [rss()].}
 #'         \item{summary}{A data frame summarizing each final basin, including
 #'           its stable-state ID (`ss`), energy, basin depth, and basin width.}
+#'         \item{ss}{A matrix containing the unique stable-state
+#'           configurations identified by [rss()].}
+#'         \item{barrier}{A data frame containing the transition barriers
+#'           identified by [ridge()] after pruning.}
 #'         \item{tps}{A matrix containing the tipping-point states associated
 #'           with transitions among the final basins.}
 #'       }
 #'     }
 #'     \item{raw}{Results before pruning. Contains:
 #'       \describe{
-#'         \item{state}{A matrix containing the unique stable-state
+#'         \item{ss}{A matrix containing the unique stable-state
 #'           configurations identified by [rss()].}
 #'         \item{barrier}{A data frame containing the transition barriers
 #'           identified by [ridge()].}
@@ -700,6 +702,45 @@ basin <- function(
     process_time = unname((proc.time() - pt)["elapsed"])
   )
 
+}
+
+
+#' @rdname basin
+#' @export
+print.basin <- function(x, ...) {
+
+  cat("--------------\n")
+  cat("Basin analysis\n")
+  cat("--------------\n")
+
+  ## stable states
+  n_raw <- nrow(x$raw$ss)
+  n_pruned <- nrow(x$pruned$ss)
+
+  cat("\n[Stable states]\n")
+  cat("  Raw:             ", n_raw, "\n", sep = "")
+  cat("  After pruning:   ", n_pruned, "\n", sep = "")
+
+  cat("\n[Simulated annealing for tipping points]\n")
+
+  ## Ridge search
+  cat("  Search route:    ", nrow(x$raw$tps), "\n", sep = "")
+  cat("  Temperature:     ", attr(x, "temp"), "\n", sep = "")
+  cat("  Cooling rate:    ", attr(x, "r"), "\n", sep = "")
+  cat("  Iterations:      ", attr(x, "iter"), "\n", sep = "")
+
+  ## basin summary
+  cat("\n[Basins]\n")
+  print(x$pruned$summary, row.names = FALSE)
+
+  ## processing time
+  if (!is.null(attr(x, "process_time"))) {
+    cat("\nProcess time:       ",
+        round(attr(x, "process_time"), 3),
+        " sec\n", sep = "")
+  }
+
+  invisible(x)
 }
 
 
