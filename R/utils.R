@@ -230,9 +230,9 @@ copy_attrs <- function(x, from, attrs) {
 
 get_label <- function(x, s) {
   apply(
-    x[, seq_len(s), drop = FALSE],
-    1,
-    paste0,
+    X = x[, seq_len(s), drop = FALSE],
+    MARGIN = 1,
+    FUN = paste0,
     collapse = ""
   )
 }
