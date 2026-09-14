@@ -355,6 +355,8 @@ Rcpp::List ridge_cpp(
   arma::mat rs(nr, ns + 3);
   arma::mat mse;
 
+  int last_pct = -1;
+
   for (arma::uword i = 0; i < nss - 1; ++i) {
     for (arma::uword j = i + 1; j < nss; ++j) {
 
@@ -409,6 +411,14 @@ Rcpp::List ridge_cpp(
       barrier(k, 7) = etip - barrier(k, 2); // energy barrier
 
       ++k;
+
+      // progress
+      int pct = static_cast<int>(100.0 * k / nr);
+
+      if (pct != last_pct) {
+        Rcpp::Rcout << "\rProgress: " << pct << "%" << std::flush;
+        last_pct = pct;
+      }
     }
   }
 
