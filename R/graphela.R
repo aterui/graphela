@@ -705,6 +705,7 @@ basin <- function(
 
 }
 
+
 #' @rdname basin
 #' @param x A basin object.
 #' @param ... Additional arguments.
@@ -827,10 +828,11 @@ egap <- function(
   ## check dimensions and validity of the observed states
   ## returns the number of species/states (s)
   s <- check_dim(obs, alpha, beta)
+  obs <- matrix(obs, ncol = s)
 
   ## calculate energy of each observed state
   v_e <- apply(
-    X = matrix(obs, ncol = s),
+    X = obs,
     MARGIN = 1,
     FUN = \(x) energy(x, alpha, beta)
   )
@@ -840,7 +842,7 @@ egap <- function(
   ## by steepest descent
   m_oss <- t(
     apply(
-      X = matrix(obs, ncol = s),
+      X = obs,
       MARGIN = 1,
       FUN = \(x) stpd(x, alpha, beta)
     )
@@ -877,7 +879,8 @@ egap <- function(
           gap = v_e - ss[idx0, "energy", drop = TRUE],
           energy = v_e,
           ss = idx0,
-          bottom = ss[idx0, "energy", drop = TRUE]
+          bottom = ss[idx0, "energy", drop = TRUE],
+          row.names = rownames(obs)
         )
       }),
       ss = b$pruned$ss,
@@ -989,7 +992,8 @@ egap <- function(
         gap = v_e - m_uss[idx1, "energy", drop = TRUE],
         energy = v_e,
         ss = idx1,
-        bottom = m_uss[idx1, "energy", drop = TRUE]
+        bottom = m_uss[idx1, "energy", drop = TRUE],
+        row.names = rownames(obs)
       ),
 
       ## stable states retained after incorporating observations
@@ -1001,7 +1005,8 @@ egap <- function(
         ss = idx_mss,
         energy = m_uss[idx_mss, "energy", drop = TRUE],
         depth = NA,
-        width = NA
+        width = NA,
+        row.names = NULL
       )
     )
 
@@ -1034,7 +1039,8 @@ egap <- function(
       gap = v_e - m_uss[idx1, "energy", drop = TRUE],
       energy = v_e,
       ss = idx1,
-      bottom = m_uss[idx1, "energy", drop = TRUE]
+      bottom = m_uss[idx1, "energy", drop = TRUE],
+      row.names = rownames(obs)
     ),
 
     ## stable states retained after incorporating observations
@@ -1046,7 +1052,8 @@ egap <- function(
       ss = ss_keep,
       energy = m_uss[ss_keep, "energy", drop = TRUE],
       depth = NA,
-      width = NA
+      width = NA,
+      row.names = NULL
     )
   )
 
