@@ -434,6 +434,8 @@ basin <- function(
 
   pt <- proc.time()
 
+  ## --- only one stable state ---
+
   ## stable states
   m_ss <- rss(
     alpha = alpha,
@@ -460,12 +462,7 @@ basin <- function(
   m_ss <- m_ss[io, , drop = FALSE]
 
   ## assign unique integer IDs to stable states
-  label <- apply(
-    m_ss[, seq_len(s), drop = FALSE],
-    MARGIN = 1,
-    \(x) paste0(x, collapse = "")
-  )
-
+  label <- get_label(m_ss, s)
   v_ss <- factor(label, levels = unique(label)) |>
     as.numeric()
 
@@ -477,7 +474,7 @@ basin <- function(
   ## state named matrix
   colnames(m_uss) <- c(snm, "energy")
 
-  ## if only one stable state
+  ## return if only one stable state
   if (nrow(m_uss) == 1) {
 
     return(
@@ -526,6 +523,8 @@ basin <- function(
     )
   }
 
+  ## --- more than one stable states but all pruned ---
+
   ## ridge and pruning
   ## - list_ridge: before pruning
   ## - list_ss: after pruning
@@ -547,7 +546,7 @@ basin <- function(
 
   colnames(list_ridge$state)[seq_len(s)] <- snm
 
-  ## if all states but one are pruned
+  ## return if all states but one are pruned
   if (is.null(list_ss$barrier)) {
 
     ## merge ss indices
@@ -611,6 +610,8 @@ basin <- function(
     )
 
   }
+
+  ## --- more than one stable states ---
 
   ## keep tipping points for basins not pruned
   ss_keep <- unique(c(list_ss$barrier[, c("ss1", "ss2")]))
