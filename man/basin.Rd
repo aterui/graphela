@@ -47,6 +47,10 @@ transitions and merge the corresponding stable states. Defaults to \code{0.2}.}
 \item{seed}{An optional integer used to control random-number generation
 in \code{\link[=rss]{rss()}} and \code{\link[=ridge]{ridge()}}. If \code{NULL}, the current random-number state is
 used.}
+
+\item{x}{A basin object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A list containing two components:

@@ -704,8 +704,9 @@ basin <- function(
 
 }
 
-
 #' @rdname basin
+#' @param x A basin object.
+#' @param ... Additional arguments.
 #' @export
 print.basin <- function(x, ...) {
 
