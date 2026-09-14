@@ -892,9 +892,13 @@ egap <- function(
     )
 
     ## copy attributes
-    attributes(res) <- attributes(b)
     attr(res, "class") <- "egap"
     attr(res, "obs") <- obs
+    res <- copy_attrs(
+      x = res,
+      from = b,
+      attr = c("alpha", "beta", "temp", "r", "iter", "th", "seed")
+    )
 
     return(res)
   }
@@ -1002,9 +1006,13 @@ egap <- function(
   )
 
   ## copy attributes
-  attributes(res) <- attributes(b)
   attr(res, "class") <- "egap"
   attr(res, "obs") <- obs
+  res <- copy_attrs(
+    x = res,
+    from = b,
+    attr = c("alpha", "beta", "temp", "r", "iter", "th", "seed")
+  )
 
   res
 }
