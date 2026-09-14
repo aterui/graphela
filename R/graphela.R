@@ -430,6 +430,8 @@ basin <- function(
     seed = NULL
 ) {
 
+  pt <- proc.time()
+
   ## stable states
   m_ss <- rss(
     alpha = alpha,
@@ -516,7 +518,8 @@ basin <- function(
         r = r,
         iter = iter,
         th = th,
-        seed = seed
+        seed = seed,
+        process_time = unname((proc.time() - pt)["elapsed"])
       )
     )
   }
@@ -600,7 +603,8 @@ basin <- function(
         r = r,
         iter = iter,
         th = th,
-        seed = seed
+        seed = seed,
+        process_time = unname((proc.time() - pt)["elapsed"])
       )
     )
 
@@ -692,7 +696,8 @@ basin <- function(
     r = r,
     iter = iter,
     th = th,
-    seed = seed
+    seed = seed,
+    process_time = unname((proc.time() - pt)["elapsed"])
   )
 
 }
