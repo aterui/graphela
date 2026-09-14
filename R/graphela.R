@@ -1063,6 +1063,26 @@ egap <- function(
 }
 
 
+#' @rdname egap
+#' @param x An egap object.
+#' @param ... Additional arguments.
+#' @export
+print.egap <- function(x, ...) {
+
+  cat("-------------------\n")
+  cat("Energy gap analysis\n")
+  cat("-------------------\n")
+
+  cat("\n[Energy gap]\n")
+  print(x$gap, row.names = TRUE)
+
+  ## basin summary
+  cat("\n[Basins]\n")
+  print(x$summary, row.names = FALSE)
+
+  invisible(x)
+}
+
 #' Fit regularized regressions for a multivariate response (conditional Markov random fields)
 #'
 #' Fits a cross-validated regularized regression model for each response
