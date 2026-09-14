@@ -828,7 +828,12 @@ egap <- function(
   ## check dimensions and validity of the observed states
   ## returns the number of species/states (s)
   s <- check_dim(obs, alpha, beta)
-  obs <- matrix(obs, ncol = s)
+  obs <- matrix(
+    obs,
+    ncol = s,
+    dimnames = list(rownames(obs),
+                    colnames(obs))
+  )
 
   ## calculate energy of each observed state
   v_e <- apply(
