@@ -2,6 +2,7 @@
 % Please edit documentation in R/graphela.R
 \name{basin}
 \alias{basin}
+\alias{print.basin}
 \title{Identify basins of attraction}
 \usage{
 basin(
@@ -15,6 +16,8 @@ basin(
   th = 0.2,
   seed = NULL
 )
+
+\method{print}{basin}(x, ...)
 }
 \arguments{
 \item{alpha}{A numeric vector of model parameters controlling the intrinsic
@@ -50,17 +53,19 @@ A list containing two components:
 \describe{
 \item{pruned}{Results after pruning shallow basins. Contains:
 \describe{
-\item{state}{A matrix containing the unique stable-state
-configurations identified by \code{\link[=rss]{rss()}}.}
 \item{summary}{A data frame summarizing each final basin, including
 its stable-state ID (\code{ss}), energy, basin depth, and basin width.}
+\item{ss}{A matrix containing the unique stable-state
+configurations identified by \code{\link[=rss]{rss()}}.}
+\item{barrier}{A data frame containing the transition barriers
+identified by \code{\link[=ridge]{ridge()}} after pruning.}
 \item{tps}{A matrix containing the tipping-point states associated
 with transitions among the final basins.}
 }
 }
 \item{raw}{Results before pruning. Contains:
 \describe{
-\item{state}{A matrix containing the unique stable-state
+\item{ss}{A matrix containing the unique stable-state
 configurations identified by \code{\link[=rss]{rss()}}.}
 \item{barrier}{A data frame containing the transition barriers
 identified by \code{\link[=ridge]{ridge()}}.}
