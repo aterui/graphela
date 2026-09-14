@@ -979,6 +979,8 @@ egap <- function(
 
     idx_mss <- unique(v_merge)
 
+    warning("All but one stable state were pruned; this may indicate a flat landscape.")
+
     ## return energy gaps and updated stable-state summary
     res <- list(
       ## energy gap between each observation and its associated
