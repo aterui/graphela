@@ -562,7 +562,7 @@ basin <- function(
 
     idx_mss <- unique(v_merge)
 
-    warning("All stable states but one are pruned. Likely the landscape is flat.")
+    warning("All but one stable state were pruned; this may indicate a flat landscape.")
 
     return(
       structure(
