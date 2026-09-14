@@ -816,6 +816,8 @@ egap <- function(
     seed = NULL
 ) {
 
+  ## --- all observed stable states are already known ---
+
   ## validate input and retrieve model parameters
   ## alpha and beta are stored as attributes of the basin object
   alpha <- attr(b, "alpha")
@@ -864,8 +866,7 @@ egap <- function(
     v_match
   })
 
-  ## --- return if all observed stable states are already known ---
-
+  ## return if all observed stable states are known
   if (!any(is.na(idx0))) {
 
     ## no new stable states were found
@@ -893,6 +894,8 @@ egap <- function(
 
     return(res)
   }
+
+  ## --- new stable states are found (all but one pruned) ---
 
   message(
     "New stable states were found. ",
@@ -959,8 +962,7 @@ egap <- function(
     v_match
   })
 
-  ## --- return if all states but one are pruned ---
-
+  ## return if all states but one are pruned
   if (is.null(list_ss$barrier)) {
 
     ## merge ss indices
@@ -1012,7 +1014,7 @@ egap <- function(
     return(res)
   }
 
-  ## --- more than one stable state retained ---
+  ## --- new stable states were found (more than one retained) ---
 
   ## identify stable states retained after pruning
   ## collect stable states that participate in at least one retained
