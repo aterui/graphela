@@ -212,6 +212,7 @@ symmetrize <- function(X,
   M
 }
 
+
 #' Copy attributes
 #'
 #' @noRd
@@ -220,4 +221,18 @@ copy_attrs <- function(x, from, attrs) {
   for (a in attrs)
     attr(x, a) <- attr(from, a)
   x
+}
+
+
+#' Get state labels
+#'
+#' @noRd
+
+get_label <- function(x, s) {
+  apply(
+    x[, seq_len(s), drop = FALSE],
+    1,
+    paste0,
+    collapse = ""
+  )
 }
