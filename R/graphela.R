@@ -864,7 +864,8 @@ egap <- function(
     v_match
   })
 
-  ## return if all observed stable states are already known
+  ## --- return if all observed stable states are already known ---
+
   if (!any(is.na(idx0))) {
 
     ## no new stable states were found
@@ -937,13 +938,6 @@ egap <- function(
   ) |>
     prune(th = attr(b, "th"))
 
-  ## identify stable states retained after pruning
-  ## collect stable states that participate in at least one retained
-  ## barrier
-  ss_keep <- c(list_ss$barrier[, c("ss1", "ss2")]) |>
-    unique() |>
-    sort()
-
   ## match observed stable states to expanded stable-state set
   idx1 <- with(list_ss, {
 
@@ -964,6 +958,68 @@ egap <- function(
 
     v_match
   })
+
+  ## --- return if all states but one are pruned ---
+
+  if (is.null(list_ss$barrier)) {
+
+    ## merge ss indices
+    v_merge <- v_ss
+
+    if (!is.null(list_ss$map)) {
+
+      for (i in seq_len(nrow(list_ss$map))) {
+        v_merge[v_merge == list_ss$map[i, 1]] <- list_ss$map[i, 2]
+      }
+
+    }
+
+    idx_mss <- unique(v_merge)
+
+    ## return energy gaps and updated stable-state summary
+    res <- list(
+      ## energy gap between each observation and its associated
+      ## stable state
+      gap = data.frame(
+        gap = v_e - m_uss[idx1, "energy", drop = TRUE],
+        energy = v_e,
+        ss = idx1,
+        bottom = m_uss[idx1, "energy", drop = TRUE]
+      ),
+
+      ## stable states retained after incorporating observations
+      ss = m_uss[idx_mss, , drop = FALSE],
+
+      ## append newly discovered stable states to the original summary
+      ## depth and width are not estimated for these new states
+      summary = data.frame(
+        ss = idx_mss,
+        energy = m_uss[idx_mss, "energy", drop = TRUE],
+        depth = NA,
+        width = NA
+      )
+    )
+
+    ## copy attributes
+    attr(res, "class") <- "egap"
+    attr(res, "obs") <- obs
+    res <- copy_attrs(
+      x = res,
+      from = b,
+      attrs = c("alpha", "beta", "temp", "r", "iter", "th", "seed")
+    )
+
+    return(res)
+  }
+
+  ## --- more than one stable state retained ---
+
+  ## identify stable states retained after pruning
+  ## collect stable states that participate in at least one retained
+  ## barrier
+  ss_keep <- c(list_ss$barrier[, c("ss1", "ss2")]) |>
+    unique() |>
+    sort()
 
   ## return energy gaps and updated stable-state summary
   res <- list(
