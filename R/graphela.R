@@ -849,18 +849,8 @@ egap <- function(
     ## match observed stable states to the stable states identified
     ## in the original basin analysis
     v_match <- match(
-      apply(
-        m_oss[, seq_len(s), drop = FALSE],
-        1,
-        paste0,
-        collapse = ""
-      ),
-      apply(
-        ss[, seq_len(s), drop = FALSE],
-        1,
-        paste0,
-        collapse = ""
-      )
+      get_label(m_oss, s),
+      get_label(ss, s)
     )
 
     ## update indices if stable states were merged during pruning
@@ -881,10 +871,10 @@ egap <- function(
     res <- list(
       gap = with(b$raw, {
         data.frame(
-          gap = v_e - ss[idx0, "energy"],
+          gap = v_e - ss[idx0, "energy", drop = TRUE],
           energy = v_e,
           ss = idx0,
-          bottom = ss[idx0, "energy"]
+          bottom = ss[idx0, "energy", drop = TRUE]
         )
       }),
       ss = b$pruned$ss,
@@ -903,18 +893,33 @@ egap <- function(
     return(res)
   }
 
-  message("New stable states were found; re-evaluate pruning")
+  message(
+    "New stable states were found. ",
+    "Stable state indices and pruning will be re-evaluated. ",
+    "Basin summary statistics will be dropped. ",
+    "If needed, re-run `basin()` with a larger `n`."
+  )
 
   ## combine original and observed stable states
-  ## append observed stable states to the original set and remove
-  ## duplicate states
-  m_uss <- rbind(
+  m_ss_combn <- rbind(
     b$raw$ss,
     m_oss
-  ) |>
-    unique()
+  )
 
+  ## order by energy
+  io <- order(m_ss_combn[, ncol(m_ss_combn), drop = TRUE])
+  m_ss_combn <- m_ss_combn[io, , drop = FALSE]
+
+  ## assign unique integer IDs to stable states
+  label <- get_label(m_ss_combn, s)
+  v_ss <- factor(label, levels = unique(label)) |>
+    as.numeric()
+
+  rownames(m_ss_combn) <- v_ss
+
+  ## retain unique stable states
   ## assign sequential row names for stable-state indexing
+  m_uss <- m_ss_combn[!duplicated(v_ss), , drop = FALSE]
   rownames(m_uss) <- seq_len(nrow(m_uss))
 
   ## identify barriers and prune the expanded stable-state set
@@ -945,18 +950,8 @@ egap <- function(
     ## match observed stable states to the combined set of original
     ## and newly observed stable states
     v_match <- match(
-      apply(
-        m_oss[, seq_len(s), drop = FALSE],
-        1,
-        paste0,
-        collapse = ""
-      ),
-      apply(
-        m_uss[, seq_len(s), drop = FALSE],
-        1,
-        paste0,
-        collapse = ""
-      )
+      get_label(m_oss, s),
+      get_label(m_uss, s)
     )
 
     ## update indices if stable states were merged during pruning
@@ -970,38 +965,27 @@ egap <- function(
     v_match
   })
 
-  ## identify newly discovered stable states
-  ## stable states retained after pruning that were not in the
-  ## original stable-state set
-  ss_new <- setdiff(
-    ss_keep,
-    unique(idx0)
-  )
-
   ## return energy gaps and updated stable-state summary
   res <- list(
     ## energy gap between each observation and its associated
     ## stable state
     gap = data.frame(
-      gap = v_e - m_uss[idx1, "energy"],
+      gap = v_e - m_uss[idx1, "energy", drop = TRUE],
       energy = v_e,
       ss = idx1,
-      bottom = m_uss[idx1, "energy"]
+      bottom = m_uss[idx1, "energy", drop = TRUE]
     ),
 
     ## stable states retained after incorporating observations
-    ss = m_uss[ss_keep, ],
+    ss = m_uss[ss_keep, , drop = FALSE],
 
     ## append newly discovered stable states to the original summary
     ## depth and width are not estimated for these new states
-    summary = rbind(
-      b$pruned$summary,
-      data.frame(
-        ss = ss_new,
-        energy = m_uss[ss_new, "energy"],
-        depth = NA,
-        width = NA
-      )
+    summary = data.frame(
+      ss = ss_keep,
+      energy = m_uss[ss_keep, "energy", drop = TRUE],
+      depth = NA,
+      width = NA
     )
   )
 
