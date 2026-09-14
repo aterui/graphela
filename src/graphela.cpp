@@ -305,7 +305,7 @@ Rcpp::List ridge_cpp(
     const arma::mat& sse,
     const arma::rowvec& alpha,
     const arma::mat& beta,
-    double temp = 1,
+    const double temp = 1,
     const double r = 0.01,
     const arma::uword iter = 10000,
     Rcpp::Nullable<arma::uvec> index = R_NilValue
