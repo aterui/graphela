@@ -2,9 +2,12 @@
 % Please edit documentation in R/graphela.R
 \name{egap}
 \alias{egap}
+\alias{print.egap}
 \title{Calculate energy gaps between observations and stable states}
 \usage{
 egap(b, obs, temp = NULL, r = NULL, iter = NULL, th = NULL, seed = NULL)
+
+\method{print}{egap}(x, ...)
 }
 \arguments{
 \item{b}{A basin object returned by \code{\link[=basin]{basin()}}. The model parameters
@@ -31,6 +34,10 @@ re-evaluation.}
 
 \item{seed}{Optional random seed used when recalculating transition
 barriers. If \code{NULL}, the seed stored in \code{b} is used.}
+
+\item{x}{An egap object.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A list with three components:
