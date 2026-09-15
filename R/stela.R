@@ -1105,26 +1105,25 @@ print.egap <- function(x, ...) {
 #'   number of rows as \code{X}.
 #' @param X A matrix or data frame of predictor variables.
 #' @param family A character string specifying the response distribution used
-#'   by \code{glmnet::cv.glmnet()}, such as \code{"gaussian"},
-#'   \code{"binomial"}, or \code{"poisson"}.
+#'   by [glmnet::glmnet()]. Defaults to \code{"binomial"}.
+#' @param type.measure A character string specifying the loss used to evaluate
+#'   models during cross-validation. See [glmnet::cv.glmnet()] for details.
+#' @param nfolds Number of folds used for cross-validation. Defaults to 10.
+#'   See [glmnet::cv.glmnet()] for details.
+#' @param grouped Logical; whether to use grouped cross-validation statistics.
+#'   Defaults to \code{TRUE}. See [glmnet::cv.glmnet()] for details.
+#' @param control A named list of algorithm control parameters for [glmnet::cv.glmnet()],
+#'   providing per-call overrides of session defaults set by [glmnet::glmnet.control()].
+#'   See [glmnet::glmnet()] for details.
 #' @param sym.method A character string specifying the method used to
 #'   symmetrize pairwise coefficients. Passed to \code{symmetrize()}.
 #' @param lambda.method A character string specifying the criterion used to
 #'   select the regularization parameter when extracting coefficients.
-#'   Must be either \code{"lambda.1se"} or \code{"lambda.min"}.
-#' @param type.measure A character string specifying the loss used to evaluate
-#'   models during cross-validation. Passed to
-#'   \code{glmnet::cv.glmnet()}.
-#' @param nfolds Number of folds used for cross-validation. Defaults to the
-#'   number of rows in \code{Y}.
-#' @param grouped Logical; whether to use grouped cross-validation statistics.
-#'   Passed to \code{glmnet::cv.glmnet()}.
-#' @param control A named list of algorithm control parameters,
-#'   providing per-call overrides of session defaults set by
-#'   [glmnet::glmnet.control()]. See [glmnet::glmnet()] for details.
+#'   Must be either \code{"lambda.min"} (default) or \code{"lambda.1se"}.
 #' @param future.seed Logical; whether to generate reproducible random-number
 #'   streams for parallel computation.
 #' @param progress Logical; whether to show a progress bar.
+#' @param ... Additional arguments passed to [glmnet::cv.glmnet()] and [glmnet::glmnet()].
 #'
 #' @return A list with two components: \code{alpha}, a matrix of coefficients
 #'   for predictors in \code{X}, and \code{beta}, a symmetric matrix of
@@ -1138,15 +1137,16 @@ print.egap <- function(x, ...) {
 cmrf <- function(
     Y,
     X = NULL,
-    family,
-    sym.method = "min",
-    lambda.method = c("lambda.1se", "lambda.min"),
-    type.measure = "deviance",
-    nfolds = nrow(Y),
-    grouped = FALSE,
+    family = "binomial",
+    type.measure = "default",
+    nfolds = 10,
+    grouped = TRUE,
     control = list(),
+    lambda.method = c("lambda.min", "lambda.1se"),
+    sym.method = "min",
     future.seed = TRUE,
-    progress = TRUE
+    progress = TRUE,
+    ...
 ) {
 
   ## validate input
@@ -1196,16 +1196,24 @@ cmrf <- function(
     warn <- character()
 
     ## fit cross-validated regularized regression while capturing warnings
+    glm_args <- c(
+      list(
+        x = Z,
+        y = y,
+        family = family,
+        type.measure = type.measure,
+        nfolds = nfolds,
+        grouped = grouped,
+        control = control
+      ),
+      list(...)
+    )
+
     m <-
       withCallingHandlers(
-        glmnet::cv.glmnet(
-          x = Z,
-          y = y,
-          family = family,
-          type.measure = type.measure,
-          nfolds = nfolds,
-          grouped = grouped,
-          control = control
+        do.call(
+          what = glmnet::cv.glmnet,
+          args = glm_args
         ),
         warning = function(w) {
           warn <<- c(warn, conditionMessage(w))
