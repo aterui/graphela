@@ -2,30 +2,30 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 energy_cpp <- function(state, alpha, beta) {
-    .Call(`_graphela_energy_cpp`, state, alpha, beta)
+    .Call(`_stela_energy_cpp`, state, alpha, beta)
 }
 
 stpd_cpp <- function(state, alpha, beta) {
-    .Call(`_graphela_stpd_cpp`, state, alpha, beta)
+    .Call(`_stela_stpd_cpp`, state, alpha, beta)
 }
 
 rss_cpp <- function(alpha, beta, n = 10000L, replace = TRUE) {
-    .Call(`_graphela_rss_cpp`, alpha, beta, n, replace)
+    .Call(`_stela_rss_cpp`, alpha, beta, n, replace)
 }
 
 findpath_cpp <- function(s0, s1, alpha, beta, temp = 1, r = 0.01, iter = 10000L) {
-    .Call(`_graphela_findpath_cpp`, s0, s1, alpha, beta, temp, r, iter)
+    .Call(`_stela_findpath_cpp`, s0, s1, alpha, beta, temp, r, iter)
 }
 
 ridge_cpp <- function(sse, alpha, beta, temp = 1, r = 0.01, iter = 10000L, index = NULL) {
-    .Call(`_graphela_ridge_cpp`, sse, alpha, beta, temp, r, iter, index)
+    .Call(`_stela_ridge_cpp`, sse, alpha, beta, temp, r, iter, index)
 }
 
 find_shallow_cpp <- function(barrier) {
-    .Call(`_graphela_find_shallow_cpp`, barrier)
+    .Call(`_stela_find_shallow_cpp`, barrier)
 }
 
 prune_cpp <- function(barrier, th = 0.2) {
-    .Call(`_graphela_prune_cpp`, barrier, th)
+    .Call(`_stela_prune_cpp`, barrier, th)
 }
 

@@ -13,7 +13,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // energy_cpp
 double energy_cpp(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta);
-RcppExport SEXP _graphela_energy_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
+RcppExport SEXP _stela_energy_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,7 +26,7 @@ END_RCPP
 }
 // stpd_cpp
 arma::rowvec stpd_cpp(const arma::rowvec& state, const arma::rowvec& alpha, const arma::mat& beta);
-RcppExport SEXP _graphela_stpd_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
+RcppExport SEXP _stela_stpd_cpp(SEXP stateSEXP, SEXP alphaSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -39,7 +39,7 @@ END_RCPP
 }
 // rss_cpp
 arma::mat rss_cpp(arma::rowvec alpha, arma::mat beta, const arma::uword n, const bool replace);
-RcppExport SEXP _graphela_rss_cpp(SEXP alphaSEXP, SEXP betaSEXP, SEXP nSEXP, SEXP replaceSEXP) {
+RcppExport SEXP _stela_rss_cpp(SEXP alphaSEXP, SEXP betaSEXP, SEXP nSEXP, SEXP replaceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -53,7 +53,7 @@ END_RCPP
 }
 // findpath_cpp
 Rcpp::List findpath_cpp(const arma::rowvec& s0, const arma::rowvec& s1, const arma::rowvec& alpha, const arma::mat& beta, double temp, const double r, const arma::uword iter);
-RcppExport SEXP _graphela_findpath_cpp(SEXP s0SEXP, SEXP s1SEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP iterSEXP) {
+RcppExport SEXP _stela_findpath_cpp(SEXP s0SEXP, SEXP s1SEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP iterSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -70,7 +70,7 @@ END_RCPP
 }
 // ridge_cpp
 Rcpp::List ridge_cpp(const arma::mat& sse, const arma::rowvec& alpha, const arma::mat& beta, const double temp, const double r, const arma::uword iter, Rcpp::Nullable<arma::uvec> index);
-RcppExport SEXP _graphela_ridge_cpp(SEXP sseSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP iterSEXP, SEXP indexSEXP) {
+RcppExport SEXP _stela_ridge_cpp(SEXP sseSEXP, SEXP alphaSEXP, SEXP betaSEXP, SEXP tempSEXP, SEXP rSEXP, SEXP iterSEXP, SEXP indexSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -87,7 +87,7 @@ END_RCPP
 }
 // find_shallow_cpp
 arma::uword find_shallow_cpp(const arma::mat& barrier);
-RcppExport SEXP _graphela_find_shallow_cpp(SEXP barrierSEXP) {
+RcppExport SEXP _stela_find_shallow_cpp(SEXP barrierSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -98,7 +98,7 @@ END_RCPP
 }
 // prune_cpp
 Rcpp::List prune_cpp(arma::mat barrier, const double th);
-RcppExport SEXP _graphela_prune_cpp(SEXP barrierSEXP, SEXP thSEXP) {
+RcppExport SEXP _stela_prune_cpp(SEXP barrierSEXP, SEXP thSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -110,17 +110,17 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_graphela_energy_cpp", (DL_FUNC) &_graphela_energy_cpp, 3},
-    {"_graphela_stpd_cpp", (DL_FUNC) &_graphela_stpd_cpp, 3},
-    {"_graphela_rss_cpp", (DL_FUNC) &_graphela_rss_cpp, 4},
-    {"_graphela_findpath_cpp", (DL_FUNC) &_graphela_findpath_cpp, 7},
-    {"_graphela_ridge_cpp", (DL_FUNC) &_graphela_ridge_cpp, 7},
-    {"_graphela_find_shallow_cpp", (DL_FUNC) &_graphela_find_shallow_cpp, 1},
-    {"_graphela_prune_cpp", (DL_FUNC) &_graphela_prune_cpp, 2},
+    {"_stela_energy_cpp", (DL_FUNC) &_stela_energy_cpp, 3},
+    {"_stela_stpd_cpp", (DL_FUNC) &_stela_stpd_cpp, 3},
+    {"_stela_rss_cpp", (DL_FUNC) &_stela_rss_cpp, 4},
+    {"_stela_findpath_cpp", (DL_FUNC) &_stela_findpath_cpp, 7},
+    {"_stela_ridge_cpp", (DL_FUNC) &_stela_ridge_cpp, 7},
+    {"_stela_find_shallow_cpp", (DL_FUNC) &_stela_find_shallow_cpp, 1},
+    {"_stela_prune_cpp", (DL_FUNC) &_stela_prune_cpp, 2},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_graphela(DllInfo *dll) {
+RcppExport void R_init_stela(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

@@ -8,7 +8,7 @@
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
 #'
-#' @useDynLib graphela, .registration = TRUE
+#' @useDynLib stela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return Numeric value of community energy.
@@ -43,7 +43,7 @@ energy <- function(
 #' @param beta A numeric matrix of pairwise interaction parameters among
 #'   species.
 #'
-#' @useDynLib graphela, .registration = TRUE
+#' @useDynLib stela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return A binary state vector corresponding to the stable state reached by
@@ -84,7 +84,7 @@ stpd <- function(
 #' @param seed An optional integer used to control random-number
 #'   generation. If `NULL`, the current random-number state is used.
 #'
-#' @useDynLib graphela, .registration = TRUE
+#' @useDynLib stela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return A matrix of stable states and their corresponding energy values.
@@ -216,7 +216,7 @@ findpath <- function(
 #' @param seed An optional integer used to control random-number
 #'   generation. If `NULL`, the current random-number state is used.
 #'
-#' @useDynLib graphela, .registration = TRUE
+#' @useDynLib stela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return If `focus = "barrier"`, a matrix with one row for each pair
@@ -299,7 +299,7 @@ ridge <- function(
 #' @param th A numeric value between 0 and 1 specifying the threshold used
 #'   to prune shallow basins. Defaults to `0.2`.
 #'
-#' @useDynLib graphela, .registration = TRUE
+#' @useDynLib stela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return A matrix containing the stable-state relationships remaining after
@@ -366,7 +366,7 @@ prune <- function(m, th = 0.2) {
 #'   in [rss()] and [ridge()]. If `NULL`, the current random-number state is
 #'   used.
 #'
-#' @useDynLib graphela, .registration = TRUE
+#' @useDynLib stela, .registration = TRUE
 #' @importFrom Rcpp evalCpp
 #'
 #' @return A list containing two components:
