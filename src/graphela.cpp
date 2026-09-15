@@ -473,10 +473,14 @@ Rcpp::List prune_cpp(
     // find pairs with dist == 1
     arma::uvec nei = arma::find(barrier.col(idx_dist) == 1);
 
-    // find deepest and shallowest basin
+    // find shallowest basin
+    // `r` is the row index of the shallowest basin
     arma::uword r = find_shallow_cpp(barrier);
-    dmax = barrier.col(idx_depth).max();
     dmin = barrier(r, idx_depth);
+
+    // find deepest
+    // col(4) = tipping point energy, col(3) = deeper basin energy
+    dmax = arma::max(barrier.col(4) - barrier.col(3));
 
     // stop if the shallowest basin is sufficiently deep
     if (nei.is_empty() && dmin > th * dmax)
