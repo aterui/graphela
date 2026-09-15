@@ -712,17 +712,15 @@ basin <- function(
 #' @export
 print.basin <- function(x, ...) {
 
-  cat("--------------\n")
+  cat("\n--------------\n")
   cat("Basin analysis\n")
   cat("--------------\n")
 
   ## stable states
-  n_raw <- nrow(x$raw$ss)
-  n_pruned <- nrow(x$pruned$ss)
-
   cat("\n[Stable states]\n")
-  cat("  Raw:             ", n_raw, "\n", sep = "")
-  cat("  After pruning:   ", n_pruned, "\n", sep = "")
+  cat("  Raw:             ", nrow(x$raw$ss), "\n", sep = "")
+  cat("  After pruning:   ", nrow(x$pruned$ss), "\n", sep = "")
+  cat("  Threshold:       ", attr(x, "th"), "\n", sep = "")
 
   cat("\n[Simulated annealing for tipping points]\n")
 
@@ -1081,7 +1079,7 @@ egap <- function(
 #' @export
 print.egap <- function(x, ...) {
 
-  cat("-------------------\n")
+  cat("\n-------------------\n")
   cat("Energy gap analysis\n")
   cat("-------------------\n")
 
