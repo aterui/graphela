@@ -7,15 +7,16 @@
 cmrf(
   Y,
   X = NULL,
-  family,
-  sym.method = "min",
-  lambda.method = c("lambda.1se", "lambda.min"),
-  type.measure = "deviance",
-  nfolds = nrow(Y),
-  grouped = FALSE,
+  family = "binomial",
+  type.measure = "default",
+  nfolds = 10,
+  grouped = TRUE,
   control = list(),
+  lambda.method = c("lambda.min", "lambda.1se"),
+  sym.method = "min",
   future.seed = TRUE,
-  progress = TRUE
+  progress = TRUE,
+  ...
 )
 }
 \arguments{
@@ -25,34 +26,34 @@ number of rows as \code{X}.}
 \item{X}{A matrix or data frame of predictor variables.}
 
 \item{family}{A character string specifying the response distribution used
-by \code{glmnet::cv.glmnet()}, such as \code{"gaussian"},
-\code{"binomial"}, or \code{"poisson"}.}
+by \code{\link[glmnet:glmnet]{glmnet::glmnet()}}. Defaults to \code{"binomial"}.}
 
-\item{sym.method}{A character string specifying the method used to
-symmetrize pairwise coefficients. Passed to \code{symmetrize()}.}
+\item{type.measure}{A character string specifying the loss used to evaluate
+models during cross-validation. See \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} for details.}
+
+\item{nfolds}{Number of folds used for cross-validation. Defaults to 10.
+See \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} for details.}
+
+\item{grouped}{Logical; whether to use grouped cross-validation statistics.
+Defaults to \code{TRUE}. See \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} for details.}
+
+\item{control}{A named list of algorithm control parameters for \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}},
+providing per-call overrides of session defaults set by \code{\link[glmnet:glmnet.control]{glmnet::glmnet.control()}}.
+See \code{\link[glmnet:glmnet]{glmnet::glmnet()}} for details.}
 
 \item{lambda.method}{A character string specifying the criterion used to
 select the regularization parameter when extracting coefficients.
-Must be either \code{"lambda.1se"} or \code{"lambda.min"}.}
+Must be either \code{"lambda.min"} (default) or \code{"lambda.1se"}.}
 
-\item{type.measure}{A character string specifying the loss used to evaluate
-models during cross-validation. Passed to
-\code{glmnet::cv.glmnet()}.}
-
-\item{nfolds}{Number of folds used for cross-validation. Defaults to the
-number of rows in \code{Y}.}
-
-\item{grouped}{Logical; whether to use grouped cross-validation statistics.
-Passed to \code{glmnet::cv.glmnet()}.}
-
-\item{control}{A named list of algorithm control parameters,
-providing per-call overrides of session defaults set by
-\code{\link[glmnet:glmnet.control]{glmnet::glmnet.control()}}. See \code{\link[glmnet:glmnet]{glmnet::glmnet()}} for details.}
+\item{sym.method}{A character string specifying the method used to
+symmetrize pairwise coefficients. Passed to \code{symmetrize()}.}
 
 \item{future.seed}{Logical; whether to generate reproducible random-number
 streams for parallel computation.}
 
 \item{progress}{Logical; whether to show a progress bar.}
+
+\item{...}{Additional arguments passed to \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} and \code{\link[glmnet:glmnet]{glmnet::glmnet()}}.}
 }
 \value{
 A list with two components: \code{alpha}, a matrix of coefficients
