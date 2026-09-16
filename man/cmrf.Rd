@@ -2,6 +2,7 @@
 % Please edit documentation in R/stela.R
 \name{cmrf}
 \alias{cmrf}
+\alias{print.cmrf}
 \title{Fit regularized regressions for a multivariate response (conditional Markov random fields)}
 \usage{
 cmrf(
@@ -18,6 +19,8 @@ cmrf(
   progress = TRUE,
   ...
 )
+
+\method{print}{cmrf}(x, digits = 2, ...)
 }
 \arguments{
 \item{Y}{A matrix or data frame of response variables. Must have the same
@@ -53,7 +56,11 @@ streams for parallel computation.}
 
 \item{progress}{Logical; whether to show a progress bar.}
 
-\item{...}{Additional arguments passed to \code{\link[glmnet:cv.glmnet]{glmnet::cv.glmnet()}} and \code{\link[glmnet:glmnet]{glmnet::glmnet()}}.}
+\item{...}{Additional arguments.}
+
+\item{x}{A cmrf object.}
+
+\item{digits}{Print digits.}
 }
 \value{
 A list with two components: \code{alpha}, a matrix of coefficients
