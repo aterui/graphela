@@ -1344,16 +1344,55 @@ cmrf <- function(
   )
 
   ## output list
-  cout <- list(
+  res <- list(
     alpha = m_a,
     beta = m_b
   )
 
   ## attach model-fitting warnings as an attribute
-  attr(cout, "warning") <- df_warn
+  attr(res, "Y") <- Y
+  attr(res, "X") <- X
+  attr(res, "warning") <- df_warn
+  attr(res, "class") <- "cmrf"
 
   ## export
-  cout
+  res
+}
+
+
+#' @rdname cmrf
+#' @param x A cmrf object.
+#' @param digits Print digits.
+#' @param ... Additional arguments.
+#' @export
+print.cmrf <- function(x, digits = 2, ...) {
+
+  n <- nrow(attr(x, "Y"))
+  ny <- ncol(attr(x, "Y"))
+  nx <- ifelse(is.null(attr(x, "X")), 0, ncol(attr(x, "X")))
+  nms <- abbreviate(colnames(x$alpha))
+
+  cat("\n-----------------------------------\n")
+  cat("Data:\n")
+  cat("  Sample:       ", n, "\n", sep = "")
+  cat("  Species:      ", ny, "\n", sep = "")
+  cat("  Environment:  ", nx, "\n", sep = "")
+  cat("-----------------------------------\n")
+
+  cat("\nEnvironmental effects:\n\n")
+  colnames(x$alpha) <- nms
+  print(x$alpha, digits)
+
+  cat("\nAssociations:\n\n")
+  dimnames(x$beta) <- list(nms, nms)
+  print(x$beta, digits)
+
+  if (!is.null(attr(x, "warning"))) {
+    cat("\nWarning:\n")
+    print(attr(x, "warning"))
+  }
+
+  invisible(x)
 }
 
 
